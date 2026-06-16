@@ -508,3 +508,37 @@ CLASS_FEATURES: dict[str, dict[int, list[tuple[str, str]]]] = {
         20: [("Signature Spells", "Choose two 3rd-level spells: always prepared, cast once each per SR without using a slot.")],
     },
 }
+
+# Levels at which each class gains an ASI (or can take a feat)
+ASI_LEVELS: dict[str, list[int]] = {
+    "artificer":  [4, 8, 12, 16, 19],
+    "barbarian":  [4, 8, 12, 16, 19],
+    "bard":       [4, 8, 12, 16, 19],
+    "cleric":     [4, 8, 12, 16, 19],
+    "druid":      [4, 8, 12, 16, 19],
+    "fighter":    [4, 6, 8, 12, 14, 16, 19],
+    "monk":       [4, 8, 12, 16, 19],
+    "paladin":    [4, 8, 12, 16, 19],
+    "ranger":     [4, 8, 12, 16, 19],
+    "rogue":      [4, 8, 10, 12, 16, 19],
+    "sorcerer":   [4, 8, 12, 16, 19],
+    "warlock":    [4, 8, 12, 16, 19],
+    "wizard":     [4, 8, 12, 16, 19],
+}
+
+# Class level at which subclass is chosen
+SUBCLASS_LEVELS: dict[str, int] = {
+    "artificer": 3,
+    "barbarian": 3,
+    "bard":      3,
+    "cleric":    1,
+    "druid":     2,
+    "fighter":   3,
+    "monk":      3,
+    "paladin":   3,
+    "ranger":    3,
+    "rogue":     3,
+    "sorcerer":  1,
+    "warlock":   1,
+    "wizard":    2,
+}

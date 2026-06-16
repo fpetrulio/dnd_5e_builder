@@ -22,10 +22,12 @@ export const charactersApi = {
   create: (data: unknown) => api.post('/characters', data).then((r) => r.data),
   update: (id: string, data: unknown) => api.put(`/characters/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/characters/${id}`),
+  snapshots: (id: string) => api.get(`/characters/${id}/snapshots`).then((r) => r.data),
   snapshot: (id: string, level: number) =>
     api.get(`/characters/${id}/snapshot/${level}`).then((r) => r.data),
   levelUp: (id: string, choices: unknown) =>
     api.post(`/characters/${id}/level-up`, choices).then((r) => r.data),
+  levelUpInfo: (id: string) => api.get(`/characters/${id}/level-up-info`).then((r) => r.data),
   revert: (id: string, level: number) =>
     api.post(`/characters/${id}/revert/${level}`).then((r) => r.data),
   stats: (id: string) => api.get(`/characters/${id}/stats`).then((r) => r.data),

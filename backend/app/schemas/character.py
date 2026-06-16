@@ -70,3 +70,25 @@ class CharacterResponse(BaseModel):
     state: dict[str, Any]
     computed: ComputedStatsOut
     created_at: str
+
+
+class ASIChoiceIn(BaseModel):
+    method: str  # "single" | "split" | "feat" | "none"
+    ability_single: str | None = None
+    ability_a: str | None = None
+    ability_b: str | None = None
+    feat_name: str | None = None
+
+
+class LevelUpChoicesIn(BaseModel):
+    hp_method: str = "average"  # "average" | "roll" | "manual"
+    hp_value: int | None = None
+    subclass_id: str | None = None
+    asi_choice: ASIChoiceIn | None = None
+    new_skill_proficiencies: list[str] = Field(default_factory=list)
+
+
+class SnapshotOut(BaseModel):
+    id: int
+    level: int
+    created_at: str

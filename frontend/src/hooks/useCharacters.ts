@@ -1,6 +1,40 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { charactersApi } from '@/lib/api'
 
+export interface SnapshotSummary {
+  id: number
+  level: number
+  created_at: string
+}
+
+export interface LevelUpInfo {
+  can_level_up: boolean
+  reason?: string
+  new_total_level?: number
+  new_class_level?: number
+  class_id?: string
+  hit_die?: number
+  average_hp?: number
+  has_asi?: boolean
+  has_subclass_choice?: boolean
+}
+
+export interface ASIChoice {
+  method: 'single' | 'split' | 'feat' | 'none'
+  ability_single?: string
+  ability_a?: string
+  ability_b?: string
+  feat_name?: string
+}
+
+export interface LevelUpChoices {
+  hp_method: 'average' | 'roll' | 'manual'
+  hp_value?: number
+  subclass_id?: string
+  asi_choice?: ASIChoice
+  new_skill_proficiencies?: string[]
+}
+
 export function useCharacters() {
   return useQuery({
     queryKey: ['characters'],
@@ -41,6 +75,59 @@ export function useDeleteCharacter() {
   return useMutation({
     mutationFn: (id: string) => charactersApi.delete(id),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['characters'] }),
+  })
+}
+
+export function useSnapshots(characterId: string | undefined) {
+  return useQuery({
+    queryKey: ['snapshots', characterId],
+    queryFn: () => charactersApi.snapshots(characterId as string) as Promise<SnapshotSummary[]>,
+    enabled: !!characterId,
+  })
+}
+
+export function useCharacterSnapshot(characterId: string | undefined, level: number | undefined) {
+  return useQuery({
+    queryKey: ['snapshot', characterId, level],
+    queryFn: () =>
+      charactersApi.snapshot(characterId as string, level as number) as Promise<CharacterApiResponse>,
+    enabled: !!characterId && level !== undefined,
+  })
+}
+
+export function useLevelUpInfo(characterId: string | undefined) {
+  return useQuery({
+    queryKey: ['level-up-info', characterId],
+    queryFn: () => charactersApi.levelUpInfo(characterId as string) as Promise<LevelUpInfo>,
+    enabled: !!characterId,
+  })
+}
+
+export function useLevelUp(characterId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (choices: LevelUpChoices) =>
+      charactersApi.levelUp(characterId, choices) as Promise<CharacterApiResponse>,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['characters'] })
+      void qc.invalidateQueries({ queryKey: ['characters', characterId] })
+      void qc.invalidateQueries({ queryKey: ['snapshots', characterId] })
+      void qc.invalidateQueries({ queryKey: ['level-up-info', characterId] })
+    },
+  })
+}
+
+export function useRevert(characterId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (level: number) =>
+      charactersApi.revert(characterId, level) as Promise<CharacterApiResponse>,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['characters'] })
+      void qc.invalidateQueries({ queryKey: ['characters', characterId] })
+      void qc.invalidateQueries({ queryKey: ['snapshots', characterId] })
+      void qc.invalidateQueries({ queryKey: ['level-up-info', characterId] })
+    },
   })
 }
 
