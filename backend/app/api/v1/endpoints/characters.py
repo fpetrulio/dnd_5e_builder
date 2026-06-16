@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import math
 import uuid
 from typing import Any
@@ -26,6 +27,7 @@ from app.services.rules_engine.tables import (
 )
 
 router = APIRouter()
+_log = logging.getLogger("app.characters")
 
 MAX_LEVEL = 20
 PRIMARY_CLASS_IDX = 0
@@ -101,6 +103,7 @@ async def create_character(
     db.add(char)
     await db.commit()
     await db.refresh(char)
+    _log.info("Created character '%s' (id=%s)", char.name, char.id)
     return _build_response(char)
 
 
@@ -421,4 +424,63 @@ async def get_level_up_info(
         "new_class_level": new_class_level,
         **primary_info,
         "multiclass_options": multiclass_options,
+    }
+
+
+# ─── Simulate ────────────────────────────────────────────────────────────────
+
+MIN_HIT_CHANCE = 0.05
+MAX_HIT_CHANCE = 0.95
+HIT_FORMULA_BASE = 21
+
+
+@router.post("/{character_id}/simulate")
+async def simulate_character(
+    character_id: str,
+    body: dict[str, Any],
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Return DPR estimates for a character against a range of target ACs."""
+    char = await _get_or_404(character_id, db)
+    computed = compute_stats(char.state)
+
+    mods = computed["ability_modifiers"]
+    prof = computed["proficiency_bonus"]
+
+    num_dice: int = int(body.get("num_dice", 1))
+    die_size: int = int(body.get("die_size", 8))
+    num_attacks: int = int(body.get("num_attacks", 1))
+    default_attack_bonus = max(mods.get("str", 0), mods.get("dex", 0)) + prof
+    default_damage_bonus = max(mods.get("str", 0), mods.get("dex", 0))
+    attack_bonus: int = int(body.get("attack_bonus", default_attack_bonus))
+    damage_bonus: int = int(body.get("damage_bonus", default_damage_bonus))
+
+    avg_die = (die_size + 1) / 2
+    avg_damage_per_hit = num_dice * avg_die + damage_bonus
+
+    dpr_by_ac: list[dict[str, Any]] = []
+    for target_ac in range(10, 26):
+        hit_chance = max(
+            MIN_HIT_CHANCE,
+            min(MAX_HIT_CHANCE, (HIT_FORMULA_BASE + attack_bonus - target_ac) / 20),
+        )
+        dpr = num_attacks * hit_chance * avg_damage_per_hit
+        dpr_by_ac.append({
+            "target_ac": target_ac,
+            "hit_chance": round(hit_chance, 3),
+            "dpr": round(dpr, 2),
+        })
+
+    _log.info(
+        "Simulated %s (id=%s): %dd%d+%d x%d attacks",
+        char.name, char.id, num_dice, die_size, damage_bonus, num_attacks,
+    )
+
+    return {
+        "character_id": character_id,
+        "character_name": char.name,
+        "attack_bonus": attack_bonus,
+        "damage_formula": f"{num_dice}d{die_size}+{damage_bonus}",
+        "num_attacks": num_attacks,
+        "dpr_by_ac": dpr_by_ac,
     }

@@ -1,15 +1,27 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import axios, { type AxiosError } from 'axios'
+import { createLogger } from './logger'
+
+const _log = createLogger('api')
 
 export const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
 })
 
+api.interceptors.request.use((config) => {
+  _log.debug(`→ ${config.method?.toUpperCase() ?? 'REQ'} ${config.url ?? ''}`)
+  return config
+})
+
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    _log.debug(`← ${res.status} ${res.config.url ?? ''}`)
+    return res
+  },
   (err: AxiosError<{ detail?: string }>) => {
     const message = err.response?.data.detail ?? err.message
+    _log.error(`← ${err.response?.status ?? 'ERR'} ${err.config?.url ?? ''}: ${message}`)
     return Promise.reject(new Error(message))
   },
 )
@@ -74,4 +86,13 @@ export const aiApi = {
     api.post('/ai/advise', { character_id: characterId, goal }).then((r) => r.data),
   compare: (characterIds: string[]) =>
     api.post('/ai/compare', { character_ids: characterIds }).then((r) => r.data),
+}
+
+// ─── Homebrew ─────────────────────────────────────────────────────────────────
+
+export const homebrewApi = {
+  list: (type?: string) =>
+    api.get('/homebrew', { params: type ? { resource_type: type } : undefined }).then((r) => r.data),
+  create: (data: unknown) => api.post('/homebrew', data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/homebrew/${id}`),
 }

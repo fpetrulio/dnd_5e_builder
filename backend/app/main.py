@@ -10,15 +10,21 @@ from fastapi.staticfiles import StaticFiles
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.logging import RequestLoggingMiddleware, configure_logging, get_logger
+
+configure_logging(debug=settings.debug)
+_log = get_logger("app.startup")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
-    # Ensure data directory exists
     data_dir = Path(__file__).parent.parent / "data"
     data_dir.mkdir(exist_ok=True)
+    _log.info("Initialising database…")
     await init_db()
+    _log.info("Database ready — server is up")
     yield
+    _log.info("Shutting down")
 
 
 app = FastAPI(
@@ -30,6 +36,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,

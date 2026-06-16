@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from typing import Any
 
 import httpx
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.homebrew import ResourceCache
+
+_log = logging.getLogger("app.open5e")
 
 _ABILITY_MAP = {
     "strength": "str", "dexterity": "dex", "constitution": "con",
@@ -176,51 +180,59 @@ async def _cache_set(db: AsyncSession, resource_type: str, items: list[dict[str,
 async def _fetch_all(path: str) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     params: dict[str, Any] = {"limit": 100}
-    async with httpx.AsyncClient(base_url=settings.open5e_base_url, timeout=15.0) as client:
-        while True:
-            r = await client.get(path, params=params)
-            r.raise_for_status()
-            data = r.json()
-            batch = data.get("results", data if isinstance(data, list) else [])
-            results.extend(batch)
-            if not data.get("next"):
-                break
-            # Extract offset/page from next URL or increment
-            params["offset"] = params.get("offset", 0) + 100
+    try:
+        async with httpx.AsyncClient(base_url=settings.open5e_base_url, timeout=15.0) as client:
+            while True:
+                r = await client.get(path, params=params)
+                r.raise_for_status()
+                data = r.json()
+                batch = data.get("results", data if isinstance(data, list) else [])
+                results.extend(batch)
+                if not data.get("next"):
+                    break
+                params["offset"] = params.get("offset", 0) + 100
+    except httpx.TimeoutException as exc:
+        _log.error("Timeout fetching Open5e %s", path)
+        raise HTTPException(503, f"Open5e API timed out while fetching {path}") from exc
+    except httpx.HTTPStatusError as exc:
+        _log.error("HTTP %d fetching Open5e %s: %s", exc.response.status_code, path, exc)
+        raise HTTPException(502, f"Open5e API returned {exc.response.status_code}") from exc
+    except httpx.RequestError as exc:
+        _log.error("Network error fetching Open5e %s: %s", path, exc)
+        raise HTTPException(503, f"Could not reach Open5e API: {exc}") from exc
+    _log.debug("Fetched %d items from Open5e %s", len(results), path)
     return results
 
 
-async def get_classes(db: AsyncSession) -> list[dict[str, Any]]:
-    cached = await _cache_get(db, "classes")
+async def _get_resource(
+    db: AsyncSession,
+    resource_type: str,
+    path: str,
+    normalizer: object,
+) -> list[dict[str, Any]]:
+    cached = await _cache_get(db, resource_type)
     if cached:
+        _log.debug("Cache hit for '%s' (%d items)", resource_type, len(cached))
         return cached
 
-    raw = await _fetch_all("/classes/")
-    normalized = [_normalize_class(r) for r in raw]
-    await _cache_set(db, "classes", normalized)
+    _log.info("Cache miss for '%s' — fetching from Open5e", resource_type)
+    raw = await _fetch_all(path)
+    normalized = [normalizer(r) for r in raw]  # type: ignore[operator]
+    await _cache_set(db, resource_type, normalized)
+    _log.info("Cached %d '%s' from Open5e", len(normalized), resource_type)
     return normalized
+
+
+async def get_classes(db: AsyncSession) -> list[dict[str, Any]]:
+    return await _get_resource(db, "classes", "/classes/", _normalize_class)
 
 
 async def get_races(db: AsyncSession) -> list[dict[str, Any]]:
-    cached = await _cache_get(db, "races")
-    if cached:
-        return cached
-
-    raw = await _fetch_all("/races/")
-    normalized = [_normalize_race(r) for r in raw]
-    await _cache_set(db, "races", normalized)
-    return normalized
+    return await _get_resource(db, "races", "/races/", _normalize_race)
 
 
 async def get_backgrounds(db: AsyncSession) -> list[dict[str, Any]]:
-    cached = await _cache_get(db, "backgrounds")
-    if cached:
-        return cached
-
-    raw = await _fetch_all("/backgrounds/")
-    normalized = [_normalize_background(r) for r in raw]
-    await _cache_set(db, "backgrounds", normalized)
-    return normalized
+    return await _get_resource(db, "backgrounds", "/backgrounds/", _normalize_background)
 
 
 async def get_spells(

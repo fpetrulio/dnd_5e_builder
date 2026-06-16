@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -12,25 +13,45 @@ from app.services.rules_engine.tables import (
     ARMOR_TABLE,
     CLASS_FEATURES,
     CLASS_SKILL_OPTIONS,
+    FEATS,
     SUBCLASSES,
 )
 
 router = APIRouter()
+_log = logging.getLogger("app.resources")
 
 
 @router.get("/classes")
 async def list_classes(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
-    return await get_classes(db)
+    try:
+        return await get_classes(db)
+    except Exception as exc:
+        _log.error("Failed to load classes: %s", exc, exc_info=True)
+        raise
 
 
 @router.get("/races")
 async def list_races(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
-    return await get_races(db)
+    try:
+        return await get_races(db)
+    except Exception as exc:
+        _log.error("Failed to load races: %s", exc, exc_info=True)
+        raise
 
 
 @router.get("/backgrounds")
 async def list_backgrounds(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
-    return await get_backgrounds(db)
+    try:
+        return await get_backgrounds(db)
+    except Exception as exc:
+        _log.error("Failed to load backgrounds: %s", exc, exc_info=True)
+        raise
+
+
+@router.get("/feats")
+async def list_feats() -> list[dict[str, str]]:
+    """Return all SRD feats."""
+    return FEATS
 
 
 @router.get("/spells")
@@ -42,7 +63,11 @@ async def list_spells(
     offset: int = Query(0),
     db: AsyncSession = Depends(get_db),
 ) -> list[dict[str, Any]]:
-    return await get_spells(db, level=level, class_name=classes, limit=limit, offset=offset)
+    try:
+        return await get_spells(db, level=level, class_name=classes, limit=limit, offset=offset)
+    except Exception as exc:
+        _log.error("Failed to load spells: %s", exc, exc_info=True)
+        raise
 
 
 @router.get("/armor")
@@ -90,6 +115,7 @@ async def list_class_features(
     """Return all class features up to the given level."""
     features_by_level = CLASS_FEATURES.get(class_id.lower())
     if features_by_level is None:
+        _log.warning("No features found for class '%s'", class_id)
         raise HTTPException(404, f"No features found for class '{class_id}'")
 
     result: list[dict[str, Any]] = []
