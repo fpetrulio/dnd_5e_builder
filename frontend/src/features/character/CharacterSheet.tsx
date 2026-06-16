@@ -5,8 +5,10 @@ import { cn, formatModifier, slugToLabel } from '@/lib/utils'
 import type { CharacterApiResponse } from '@/hooks/useCharacters'
 import { useClassFeatures } from '@/hooks/useResources'
 import type { ClassFeatureApi } from '@/hooks/useResources'
+import StatsRadarChart from './StatsRadarChart'
+import DprCalculator from './DprCalculator'
 
-type Tab = 'overview' | 'abilities' | 'skills' | 'features' | 'spells'
+type Tab = 'overview' | 'abilities' | 'skills' | 'features' | 'spells' | 'stats'
 
 const ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
 const ABILITY_LABELS: Record<string, string> = {
@@ -37,6 +39,7 @@ export default function CharacterSheet({ character }: Props) {
     { id: 'skills', label: 'Skills' },
     { id: 'features', label: 'Features' },
     { id: 'spells', label: 'Spells' },
+    { id: 'stats', label: 'Stats' },
   ]
 
   const hasSpellcasting = computed.spell_save_dc != null
@@ -227,6 +230,22 @@ export default function CharacterSheet({ character }: Props) {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* Tab: Stats */}
+      {activeTab === 'stats' && (
+        <div className="space-y-6">
+          <StatsRadarChart
+            abilityScores={state.ability_scores}
+            abilityModifiers={computed.ability_modifiers}
+          />
+          <div className="border-t" style={{ borderColor: 'var(--color-border)' }} />
+          <DprCalculator
+            proficiencyBonus={computed.proficiency_bonus}
+            strMod={computed.ability_modifiers.str}
+            dexMod={computed.ability_modifiers.dex}
+          />
         </div>
       )}
 

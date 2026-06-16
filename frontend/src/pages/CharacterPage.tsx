@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ArrowUp, Loader2, AlertCircle } from 'lucide-react'
 import CharacterSheet from '@/features/character/CharacterSheet'
 import ProgressionTimeline from '@/features/character/ProgressionTimeline'
+import ProgressionChart from '@/features/character/ProgressionChart'
 import { useCharacter, useLevelUpInfo } from '@/hooks/useCharacters'
 
 const MAX_LEVEL = 20
@@ -59,13 +60,14 @@ export default function CharacterPage() {
         <>
           <CharacterSheet character={character} />
           <div
-            className="rounded-lg border p-4"
+            className="rounded-lg border p-4 space-y-4"
             style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}
           >
             <ProgressionTimeline
               characterId={character.id}
               currentLevel={character.computed.total_level}
             />
+            <ProgressionChart characterId={character.id} />
           </div>
         </>
       )}

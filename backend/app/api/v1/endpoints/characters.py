@@ -264,6 +264,38 @@ async def revert_to_level(
     return _build_response(char)
 
 
+# ─── Progression ─────────────────────────────────────────────────────────────
+
+@router.get("/{character_id}/progression")
+async def get_progression(
+    character_id: str, db: AsyncSession = Depends(get_db)
+) -> list[dict[str, Any]]:
+    """Return key computed stats at each snapshot level, plus the current level."""
+    char = await _get_or_404(character_id, db)
+
+    result = await db.execute(
+        select(CharacterSnapshot)
+        .where(CharacterSnapshot.character_id == character_id)
+        .order_by(CharacterSnapshot.level)
+    )
+    snapshots = result.scalars().all()
+
+    def _point(state: dict[str, Any]) -> dict[str, Any]:
+        s = compute_stats(state)
+        return {
+            "level": s["total_level"],
+            "hp": s["hp_max"],
+            "ac": s["armor_class"],
+            "proficiency_bonus": s["proficiency_bonus"],
+            "initiative": s["initiative"],
+            "speed": s["speed"],
+        }
+
+    data = [_point(snap.state) for snap in snapshots]
+    data.append(_point(char.state))
+    return data
+
+
 # ─── Level-up metadata ───────────────────────────────────────────────────────
 
 @router.get("/{character_id}/level-up-info")

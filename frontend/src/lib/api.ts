@@ -28,6 +28,7 @@ export const charactersApi = {
   levelUp: (id: string, choices: unknown) =>
     api.post(`/characters/${id}/level-up`, choices).then((r) => r.data),
   levelUpInfo: (id: string) => api.get(`/characters/${id}/level-up-info`).then((r) => r.data),
+  progression: (id: string) => api.get(`/characters/${id}/progression`).then((r) => r.data),
   revert: (id: string, level: number) =>
     api.post(`/characters/${id}/revert/${level}`).then((r) => r.data),
   stats: (id: string) => api.get(`/characters/${id}/stats`).then((r) => r.data),

@@ -7,6 +7,15 @@ export interface SnapshotSummary {
   created_at: string
 }
 
+export interface ProgressionPoint {
+  level: number
+  hp: number
+  ac: number
+  proficiency_bonus: number
+  initiative: number
+  speed: number
+}
+
 export interface LevelUpInfo {
   can_level_up: boolean
   reason?: string
@@ -92,6 +101,14 @@ export function useCharacterSnapshot(characterId: string | undefined, level: num
     queryFn: () =>
       charactersApi.snapshot(characterId as string, level as number) as Promise<CharacterApiResponse>,
     enabled: !!characterId && level !== undefined,
+  })
+}
+
+export function useProgression(characterId: string | undefined) {
+  return useQuery({
+    queryKey: ['progression', characterId],
+    queryFn: () => charactersApi.progression(characterId as string) as Promise<ProgressionPoint[]>,
+    enabled: !!characterId,
   })
 }
 
