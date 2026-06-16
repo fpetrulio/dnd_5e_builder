@@ -42,6 +42,9 @@ export const resourcesApi = {
   feats: () => api.get('/resources/feats').then((r) => r.data),
   spells: (params?: Record<string, unknown>) =>
     api.get('/resources/spells', { params }).then((r) => r.data),
+  classSkills: () => api.get('/resources/class-skills').then((r) => r.data),
+  classFeatures: (classId: string, level: number) =>
+    api.get('/resources/class-features', { params: { class_id: classId, level } }).then((r) => r.data),
 }
 
 // ─── Party ───────────────────────────────────────────────────────────────────

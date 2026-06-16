@@ -36,6 +36,17 @@ export interface DndBackgroundApi {
   source: string
 }
 
+export interface ClassSkillsApi {
+  skills: string[]
+  count: number
+}
+
+export interface ClassFeatureApi {
+  level: number
+  name: string
+  description: string
+}
+
 export function useClasses() {
   return useQuery({
     queryKey: ['resources', 'classes'],
@@ -57,5 +68,22 @@ export function useBackgrounds() {
     queryKey: ['resources', 'backgrounds'],
     queryFn: () => resourcesApi.backgrounds() as Promise<DndBackgroundApi[]>,
     staleTime: 1000 * 60 * 60,
+  })
+}
+
+export function useClassSkills() {
+  return useQuery({
+    queryKey: ['resources', 'class-skills'],
+    queryFn: () => resourcesApi.classSkills() as Promise<Record<string, ClassSkillsApi>>,
+    staleTime: Infinity,
+  })
+}
+
+export function useClassFeatures(classId: string | undefined, level: number) {
+  return useQuery({
+    queryKey: ['resources', 'class-features', classId, level],
+    queryFn: () => resourcesApi.classFeatures(classId as string, level) as Promise<ClassFeatureApi[]>,
+    enabled: !!classId && level > 0,
+    staleTime: Infinity,
   })
 }
