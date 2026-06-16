@@ -48,3 +48,21 @@
 - [ ] Export PDF scheda personaggio
 - [ ] Condivisione build via link
 - [ ] Import da JSON / D&D Beyond
+
+## Fase 8 — Simulatore di Encounter
+- [ ] Simulazione round vs mostro singolo
+- [ ] Simulazione party completo
+- [ ] Distribuzione danni e probabilità sopravvivenza
+- [ ] Configurazione condizioni iniziali e terreno
+
+## Fase 9 — Session Companion
+- [ ] Tracker HP / slot / risorse correnti
+- [ ] Riposo breve e lungo con recupero automatico
+- [ ] Condition e concentration tracker
+- [ ] Diario del personaggio e log sessioni
+
+## Fase 10 — Tool Avanzati
+- [ ] Spell slot manager avanzato (multiclass + Pact Magic)
+- [ ] Breakpoint detector visuale
+- [ ] Libreria template e archetypes
+- [ ] Community homebrew sharing

@@ -156,7 +156,77 @@
 
 ---
 
-## 10. UX e Interfaccia
+## 10. Simulatore di Encounter
+
+- Simulazione di N round di combattimento tra la build e uno o più mostri (per CR o per statblock specifico)
+- Output: distribuzione dei danni inflitti, probabilità di sopravvivenza del personaggio, risorse consumate per encounter
+- Modalità party: simulazione con il gruppo completo
+- Utile per validare le statistiche calcolate (DPR, sustain) in scenari reali
+- Configurabile: vantaggio/svantaggio, terreno difficile, spell precast, condizioni iniziali
+
+---
+
+## 11. Tracker di Sessione (Companion Mode)
+
+- Monitoraggio HP correnti, slot incantesimo usati, capacità a riposo breve/lungo già spese
+- Tracker Hit Dice usati e recuperati
+- Pulsante "Riposo Breve" e "Riposo Lungo" con calcolo automatico delle risorse recuperate
+- Storico degli encounter della sessione corrente
+- Nota veloce per appunti di sessione (loot trovato, PNG incontrati, ecc.)
+- Modalità "al tavolo": interfaccia semplificata ottimizzata per uso rapido durante il gioco
+
+---
+
+## 12. Condition e Concentration Tracker
+
+- Lista delle condizioni attive sul personaggio (Poisoned, Frightened, Grappled, ecc.) con descrizione degli effetti
+- Concentration tracker: un solo incantesimo alla volta, con avviso automatico se si tenta di concentrarsi su un secondo
+- Tiro salvezza Costituzione automatico su danno subito mentre si è in concentrazione (DC = max(10, danno/2))
+- Indicatore visuale dello stato del personaggio (condizioni + concentrazione attiva)
+
+---
+
+## 13. Spell Slot Manager Avanzato (Multiclass)
+
+- Calcolo automatico degli slot ibridi per ogni combinazione di multiclass spellcaster (regola PHB tabella multiclasse)
+- Gestione separata di Pact Magic (Warlock) dagli slot standard: slot corti, livello fisso, recupero a riposo breve
+- Conversione automatica Sorcery Points ↔ Spell Slots (Sorcerer)
+- Wizard Arcane Recovery, Druid Wild Shape spell slot (Moon Druid), Channel Divinity, ecc.
+- Avvisi su scelte di multiclass che interrompono la progressione degli incantesimi (es. perdita di slot di 6° livello)
+
+---
+
+## 14. Breakpoint Detector
+
+- Analisi automatica della build per identificare i livelli "chiave" dove conviene fermare il multiclass
+- Evidenziazione delle feature chiave per livello di ogni classe (es. Paladin 6 → Aura of Protection, Warlock 5 → 3° slot Pact Magic)
+- Calcolo del "costo opportunità" del multiclass: cosa si perde ritardando la classe principale
+- Visualizzazione grafica dei breakpoint sulla timeline della progressione
+- Integrazione con AI Advisor per suggerire split ottimali (es. "Paladin 2 sblocca Divine Smite con slot Warlock: fortissima sinergia")
+
+---
+
+## 15. Template e Archetypes
+
+- Libreria di build archetipiche pronte: Coffeelock, SAD Paladin, Hexblade Dip, Gloom Stalker Assassin, ecc.
+- Ogni template include: descrizione del concept, punti di forza/debolezza, livelli chiave, varianti consigliate
+- Uso come punto di partenza per una nuova build o come riferimento per i confronti
+- Template contribuiti dalla community (con moderazione)
+- Filtri per: ruolo, stile di gioco, difficoltà di gestione, tier di campagna
+
+---
+
+## 16. Diario del Personaggio (Campaign Companion)
+
+- Log delle sessioni giocate con data, note e XP guadagnati
+- Tracker del loot: oggetti trovati con link alla scheda e assegnazione al personaggio
+- Storia del personaggio: eventi rilevanti, PNG conosciuti, obiettivi
+- Progressione XP con soglie di livello visualizzate
+- Timeline della campagna sovrapposta alla timeline dei livelli
+
+---
+
+## 17. UX e Interfaccia
 
 - Interfaccia responsive (desktop + tablet + mobile per uso al tavolo)
 - Dark mode / Light mode
