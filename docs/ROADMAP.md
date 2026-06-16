@@ -13,20 +13,23 @@
 - [x] Wizard di creazione guidata (4 step: identity, abilities, background, review)
 - [x] Scelta razza / classe / background
 - [x] Generazione caratteristiche (Standard Array, Point Buy, manuale)
-- [x] Scheda personaggio base visualizzata (4 tab: overview, abilities, skills, spells)
-- [ ] Selezione competenze nelle abilità (skill proficiency selection) ← **critico**
-- [ ] Scelta sottorazza
-- [ ] Metodo dadi (4d6 drop lowest) con log dei risultati
+- [x] Scheda personaggio base visualizzata (5 tab: overview, abilities, skills, features, spells)
+- [x] Selezione competenze nelle abilità (skill proficiency selection)
+- [x] Scelta sottorazza con bonus applicati
+- [x] Metodo dadi (4d6 drop lowest) con assegnazione libera
+- [x] Visualizzazione capacità di classe per livello nella scheda (tab Features)
 - [ ] Equipaggiamento iniziale
-- [ ] Visualizzazione capacità di classe/razza/background nella scheda
 - [ ] Validazione regole in tempo reale con messaggi esplicativi
 
 ## Fase 2 — Progressione e Revert
-- [ ] Level-up wizard
-- [ ] Snapshot per livello (modello DB esiste, manca UI/API)
-- [ ] Revert a livello precedente
-- [ ] Timeline visuale della progressione
-- [ ] Vista build per ogni livello
+- [x] Level-up wizard (HP choice, ASI, subclass, confirm)
+- [x] Snapshot immutabile per livello (creato automaticamente prima di ogni level-up)
+- [x] Revert a livello precedente (con pulizia snapshot successivi)
+- [x] Timeline visuale della progressione (bubble per livello, click per snapshot)
+- [x] Vista build per ogni livello (SnapshotPage con scheda read-only)
+- [x] Endpoint GET /characters/{id}/level-up-info (has_asi, has_subclass_choice, ecc.)
+- [ ] Multiclassing (level-up di una seconda classe)
+- [ ] Selezione subclass da lista (invece di testo libero)
 
 ## Fase 3 — Analisi e Statistiche
 - [x] Calcolo HP, CA, iniziativa, spell slot (nel motore delle regole)
