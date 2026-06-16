@@ -1,40 +1,49 @@
 # Roadmap — D&D 5e Character Builder
 
 ## Fase 0 — Fondamenta (MVP tecnico)
-- [ ] Scelta dello stack tecnico (frontend, backend, DB)
-- [ ] Setup progetto, CI/CD, ambiente di sviluppo
-- [ ] Integrazione API dati ufficiali (Open5e / 5etools)
-- [ ] Modello dati: personaggio, build, livello, snapshot
-- [ ] Motore delle regole base (creazione personaggio livello 1)
+- [x] Scelta dello stack tecnico (frontend, backend, DB)
+- [x] Setup progetto, CI/CD, ambiente di sviluppo
+- [x] Integrazione API dati ufficiali (Open5e con cache SQLite)
+- [x] Modello dati: personaggio, build, livello, snapshot
+- [x] Motore delle regole base (HP, AC, prof bonus, saves, skills, spell slots)
+- [ ] 5etools JSON come fallback/arricchimento
+- [ ] GitHub Actions CI (lint + test on push)
 
 ## Fase 1 — Creazione Personaggio
-- [ ] Wizard di creazione guidata
-- [ ] Scelta razza / classe / background
-- [ ] Generazione caratteristiche (Standard Array, Point Buy, dadi)
-- [ ] Scheda personaggio base visualizzata
-- [ ] Validazione regole base
+- [x] Wizard di creazione guidata (4 step: identity, abilities, background, review)
+- [x] Scelta razza / classe / background
+- [x] Generazione caratteristiche (Standard Array, Point Buy, manuale)
+- [x] Scheda personaggio base visualizzata (4 tab: overview, abilities, skills, spells)
+- [ ] Selezione competenze nelle abilità (skill proficiency selection) ← **critico**
+- [ ] Scelta sottorazza
+- [ ] Metodo dadi (4d6 drop lowest) con log dei risultati
+- [ ] Equipaggiamento iniziale
+- [ ] Visualizzazione capacità di classe/razza/background nella scheda
+- [ ] Validazione regole in tempo reale con messaggi esplicativi
 
 ## Fase 2 — Progressione e Revert
 - [ ] Level-up wizard
-- [ ] Snapshot per livello
+- [ ] Snapshot per livello (modello DB esiste, manca UI/API)
 - [ ] Revert a livello precedente
 - [ ] Timeline visuale della progressione
 - [ ] Vista build per ogni livello
 
 ## Fase 3 — Analisi e Statistiche
-- [ ] Calcolo DPR, HP, CA, spell slot
+- [x] Calcolo HP, CA, iniziativa, spell slot (nel motore delle regole)
+- [ ] Calcolo DPR (danni per round)
 - [ ] Simulatore probabilistico (Monte Carlo)
 - [ ] Dashboard grafica per singola build
 - [ ] Radar chart e grafici di progressione
 
 ## Fase 4 — Confronto e AI
-- [ ] Comparatore build (side-by-side)
+- [x] Endpoint AI advisor (advise + compare) — solo backend
+- [ ] UI comparatore build (pagina /compare esiste ma è vuota)
 - [ ] Diff visuale tra livelli
-- [ ] AI Advisor (suggerimenti build)
+- [ ] UI AI Advisor integrata nella scheda personaggio
 - [ ] Ottimizzatore con obiettivo (DPS / survivability / utility)
 
 ## Fase 5 — Homebrew e Risorse Custom
-- [ ] Editor risorse homebrew
+- [ ] Editor risorse homebrew (pagina /homebrew esiste ma è vuota)
 - [ ] Validazione homebrew vs regole
 - [ ] Import/export pacchetti homebrew
 
