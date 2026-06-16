@@ -108,6 +108,23 @@ ARMOR_TABLE: dict[str, tuple[int, str]] = {
     "plate": (18, "heavy"),
 }
 
+# Armor types each class is proficient with: "light" | "medium" | "heavy" | "shield"
+ARMOR_PROFICIENCIES: dict[str, list[str]] = {
+    "artificer": ["light", "medium", "shield"],
+    "barbarian": ["light", "medium", "shield"],
+    "bard":      ["light"],
+    "cleric":    ["light", "medium", "shield"],
+    "druid":     ["light", "medium", "shield"],
+    "fighter":   ["light", "medium", "heavy", "shield"],
+    "monk":      [],
+    "paladin":   ["light", "medium", "heavy", "shield"],
+    "ranger":    ["light", "medium", "shield"],
+    "rogue":     ["light"],
+    "sorcerer":  [],
+    "warlock":   ["light"],
+    "wizard":    [],
+}
+
 SPELLCASTING_TYPE: dict[str, str | None] = {
     "bard": "full",
     "cleric": "full",

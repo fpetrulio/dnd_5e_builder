@@ -50,6 +50,8 @@ export const resourcesApi = {
     api.get('/resources/class-features', { params: { class_id: classId, level } }).then((r) => r.data),
   subclasses: (classId: string) =>
     api.get('/resources/subclasses', { params: { class_id: classId } }).then((r) => r.data),
+  armor: (classId: string) =>
+    api.get('/resources/armor', { params: { class_id: classId } }).then((r) => r.data),
 }
 
 // ─── Party ───────────────────────────────────────────────────────────────────

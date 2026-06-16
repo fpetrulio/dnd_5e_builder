@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Check, Loader2, Dices } from 'lucide-react'
 import { cn, slugToLabel, formatModifier } from '@/lib/utils'
 import { useCreateCharacter } from '@/hooks/useCharacters'
-import { useClasses, useRaces, useBackgrounds, useClassSkills } from '@/hooks/useResources'
-import type { DndClassApi, DndRaceApi, DndSubraceApi, DndBackgroundApi } from '@/hooks/useResources'
+import { useClasses, useRaces, useBackgrounds, useClassSkills, useArmor } from '@/hooks/useResources'
+import type { DndClassApi, DndRaceApi, DndSubraceApi, DndBackgroundApi, ArmorApi } from '@/hooks/useResources'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -53,6 +53,9 @@ interface WizardForm {
   dice_assignments: Record<string, number | null>
   // skills
   class_skills: string[]
+  // equipment
+  armor_id: string | null
+  shield_equipped: boolean
 }
 
 function abilityModifier(score: number): number {
@@ -90,9 +93,11 @@ export default function CharacterWizard() {
     dice_rolls: [],
     dice_assignments: Object.fromEntries(ABILITIES.map((a) => [a, null])),
     class_skills: [],
+    armor_id: null,
+    shield_equipped: false,
   })
 
-  const steps = ['Identity', 'Abilities', 'Skills', 'Review']
+  const steps = ['Identity', 'Abilities', 'Skills', 'Equipment', 'Review']
 
   function patch(updates: Partial<WizardForm>) {
     setForm((prev) => ({ ...prev, ...updates }))
@@ -100,11 +105,14 @@ export default function CharacterWizard() {
 
   // ─── Derived data ──────────────────────────────────────────────────────────
 
+  const { data: armorList = [] } = useArmor(form.class_id || undefined)
+
   const selectedRace = races.find((r: DndRaceApi) => r.id === form.race_id)
   const subraces = selectedRace?.subraces ?? []
   const selectedSubrace = subraces.find((s: DndSubraceApi) => s.id === form.subrace_id)
   const selectedClass = classes.find((c: DndClassApi) => c.id === form.class_id)
   const selectedBackground = backgrounds.find((b: DndBackgroundApi) => b.id === form.background_id)
+  const hasShieldProficiency = armorList.length > 0  // classes with no armor also have no shield
 
   // Racial bonuses: race + subrace combined
   const racialBonuses: Record<string, number> = { ...selectedRace?.ability_bonuses }
@@ -231,6 +239,8 @@ export default function CharacterWizard() {
       }
       case 2:
         return form.class_skills.length === skillCount
+      case 3:
+        return true  // equipment is always optional
       default:
         return true
     }
@@ -252,6 +262,8 @@ export default function CharacterWizard() {
         ability_scores: scores,
         skill_proficiencies: allSkills,
         current_level: form.level,
+        armor_id: form.armor_id ?? undefined,
+        shield_equipped: form.shield_equipped,
       },
     })
     void navigate('/characters')
@@ -351,7 +363,7 @@ export default function CharacterWizard() {
                   <SelectCard
                     key={c.id}
                     selected={form.class_id === c.id}
-                    onClick={() => patch({ class_id: c.id, class_skills: [] })}
+                    onClick={() => patch({ class_id: c.id, class_skills: [], armor_id: null, shield_equipped: false })}
                     label={c.name}
                     sub={`d${c.hit_die} HP`}
                   />
@@ -612,8 +624,93 @@ export default function CharacterWizard() {
         </div>
       )}
 
-      {/* ── Step 3: Review ── */}
+      {/* ── Step 3: Equipment ── */}
       {step === 3 && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold">Starting Equipment</h2>
+
+          {armorList.length === 0 ? (
+            <div
+              className="rounded-lg border p-4 text-sm opacity-60"
+              style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}
+            >
+              {form.class_id
+                ? `${selectedClass?.name ?? 'This class'} has no armor proficiencies — you rely on Unarmored Defense or spells.`
+                : 'Select a class first to see armor options.'}
+            </div>
+          ) : (
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-2">Armor</label>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => patch({ armor_id: null })}
+                    className={cn('w-full text-left rounded-lg border p-3 transition-all hover:opacity-90')}
+                    style={{
+                      borderColor: form.armor_id === null ? 'var(--color-primary)' : 'var(--color-border)',
+                      backgroundColor: form.armor_id === null
+                        ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)'
+                        : 'var(--color-surface)',
+                    }}
+                  >
+                    <div className="font-medium text-sm" style={{ color: form.armor_id === null ? 'var(--color-primary)' : 'inherit' }}>
+                      Unarmored
+                    </div>
+                    <div className="text-xs opacity-60 mt-0.5">AC = 10 + DEX mod</div>
+                  </button>
+
+                  {armorList.map((armor: ArmorApi) => {
+                    const dexNote = armor.type === 'heavy' ? '(no DEX)' : armor.type === 'medium' ? '(+ DEX, max +2)' : '(+ DEX)'
+                    return (
+                      <button
+                        key={armor.id}
+                        type="button"
+                        onClick={() => patch({ armor_id: armor.id })}
+                        className="w-full text-left rounded-lg border p-3 transition-all hover:opacity-90"
+                        style={{
+                          borderColor: form.armor_id === armor.id ? 'var(--color-primary)' : 'var(--color-border)',
+                          backgroundColor: form.armor_id === armor.id
+                            ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)'
+                            : 'var(--color-surface)',
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium text-sm" style={{ color: form.armor_id === armor.id ? 'var(--color-primary)' : 'inherit' }}>
+                            {armor.name}
+                          </div>
+                          <div className="text-xs font-mono opacity-70">AC {armor.base_ac} {dexNote}</div>
+                        </div>
+                        <div className="text-xs opacity-50 mt-0.5 capitalize">{armor.type} armor</div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {hasShieldProficiency && (
+                <div>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.shield_equipped}
+                      onChange={(e) => patch({ shield_equipped: e.target.checked })}
+                      className="w-4 h-4 accent-[--color-primary]"
+                    />
+                    <div>
+                      <div className="text-sm font-medium">Equip a Shield (+2 AC)</div>
+                      <div className="text-xs opacity-50">Requires one free hand</div>
+                    </div>
+                  </label>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Step 4: Review ── */}
+      {step === 4 && (
         <div className="space-y-6">
           <h2 className="text-xl font-bold">Review &amp; Create</h2>
           <div className="rounded-lg border p-4 space-y-3" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}>
@@ -622,6 +719,14 @@ export default function CharacterWizard() {
             <ReviewRow label="Class" value={selectedClass ? `${selectedClass.name} (Level ${form.level})` : '—'} />
             <ReviewRow label="Background" value={selectedBackground?.name ?? '—'} />
             <ReviewRow label="Alignment" value={slugToLabel(form.alignment)} />
+            <ReviewRow
+              label="Armor"
+              value={
+                form.armor_id
+                  ? `${(armorList.find((a: ArmorApi) => a.id === form.armor_id)?.name ?? form.armor_id)}${form.shield_equipped ? ' + Shield' : ''}`
+                  : form.shield_equipped ? 'Unarmored + Shield' : 'Unarmored'
+              }
+            />
 
             <div className="pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
               <p className="text-xs opacity-50 mb-2">Ability Scores (base + racial bonus)</p>

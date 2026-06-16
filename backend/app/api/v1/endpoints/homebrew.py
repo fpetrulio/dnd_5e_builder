@@ -43,7 +43,7 @@ async def create_homebrew(
 
 
 @router.delete("/{resource_id}", status_code=204)
-async def delete_homebrew(resource_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_homebrew(resource_id: str, db: AsyncSession = Depends(get_db)) -> None:
     resource = await db.get(HomebrewResource, resource_id)
     if not resource:
         raise HTTPException(404, "Resource not found")

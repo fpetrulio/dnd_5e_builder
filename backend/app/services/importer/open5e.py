@@ -240,4 +240,5 @@ async def get_spells(
         r = await client.get("/spells/", params=params)
         r.raise_for_status()
         data = r.json()
-        return data.get("results", [])
+        results: list[dict[str, Any]] = data.get("results", [])
+        return results

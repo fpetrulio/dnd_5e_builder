@@ -28,10 +28,11 @@ class Character(Base):
 
     @property
     def state(self) -> dict[str, Any]:
-        return json.loads(self.state_json)
+        result: dict[str, Any] = json.loads(self.state_json)
+        return result
 
     @state.setter
-    def state(self, value: dict[str, Any]):
+    def state(self, value: dict[str, Any]) -> None:
         self.state_json = json.dumps(value)
 
 
@@ -50,4 +51,5 @@ class CharacterSnapshot(Base):
 
     @property
     def state(self) -> dict[str, Any]:
-        return json.loads(self.state_json)
+        result: dict[str, Any] = json.loads(self.state_json)
+        return result

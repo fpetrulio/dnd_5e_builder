@@ -7,7 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.importer.open5e import get_backgrounds, get_classes, get_races, get_spells
-from app.services.rules_engine.tables import CLASS_FEATURES, CLASS_SKILL_OPTIONS, SUBCLASSES
+from app.services.rules_engine.tables import (
+    ARMOR_PROFICIENCIES,
+    ARMOR_TABLE,
+    CLASS_FEATURES,
+    CLASS_SKILL_OPTIONS,
+    SUBCLASSES,
+)
 
 router = APIRouter()
 
@@ -37,6 +43,26 @@ async def list_spells(
     db: AsyncSession = Depends(get_db),
 ) -> list[dict[str, Any]]:
     return await get_spells(db, level=level, class_name=classes, limit=limit, offset=offset)
+
+
+@router.get("/armor")
+async def list_armor(
+    class_id: str = Query(..., description="Class slug, e.g. 'fighter'"),
+) -> list[dict[str, Any]]:
+    """Return armors the given class is proficient with, ordered by AC."""
+    profs = ARMOR_PROFICIENCIES.get(class_id.lower(), [])
+    result: list[dict[str, Any]] = [
+        {
+            "id": armor_id,
+            "name": armor_id.replace("-", " ").title(),
+            "base_ac": base_ac,
+            "type": armor_type,
+        }
+        for armor_id, (base_ac, armor_type) in ARMOR_TABLE.items()
+        if armor_type in profs
+    ]
+    result.sort(key=lambda x: x["base_ac"])
+    return result
 
 
 @router.get("/subclasses")

@@ -88,10 +88,26 @@ export function useClassFeatures(classId: string | undefined, level: number) {
   })
 }
 
+export interface ArmorApi {
+  id: string
+  name: string
+  base_ac: number
+  type: 'light' | 'medium' | 'heavy'
+}
+
 export interface SubclassApi {
   id: string
   name: string
   description: string
+}
+
+export function useArmor(classId: string | undefined) {
+  return useQuery({
+    queryKey: ['resources', 'armor', classId],
+    queryFn: () => resourcesApi.armor(classId as string) as Promise<ArmorApi[]>,
+    enabled: !!classId,
+    staleTime: Infinity,
+  })
 }
 
 export function useSubclasses(classId: string | undefined) {

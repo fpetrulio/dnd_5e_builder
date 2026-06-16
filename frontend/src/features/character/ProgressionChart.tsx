@@ -95,7 +95,7 @@ export default function ProgressionChart({ characterId }: Props) {
               borderRadius: '6px',
               fontSize: '12px',
             }}
-            labelFormatter={(label: number) => `Level ${label}`}
+            labelFormatter={(label) => `Level ${String(label)}`}
           />
           <Legend
             wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }}

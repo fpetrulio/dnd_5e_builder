@@ -1,5 +1,7 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +13,7 @@ from app.core.database import init_db
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
     # Ensure data directory exists
     data_dir = Path(__file__).parent.parent / "data"
     data_dir.mkdir(exist_ok=True)

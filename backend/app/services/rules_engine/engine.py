@@ -25,7 +25,7 @@ def proficiency_bonus(total_level: int) -> int:
 
 
 def _resolve_classes(state: dict[str, Any]) -> list[dict[str, Any]]:
-    classes = state.get("classes", [])
+    classes: list[dict[str, Any]] = state.get("classes", [])
     if not classes and state.get("current_level", 1) > 0:
         # Legacy / simplified state: single class stored flat
         class_id = state.get("class_id", "fighter")

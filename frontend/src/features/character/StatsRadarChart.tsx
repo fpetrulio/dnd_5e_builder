@@ -47,9 +47,9 @@ export default function StatsRadarChart({ abilityScores, abilityModifiers }: Pro
             dot={{ r: 3, fill: 'var(--color-primary)', strokeWidth: 0 }}
           />
           <Tooltip
-            formatter={(value: number, _name: string, entry: { payload?: { mod?: number } }) => {
+            formatter={(value, _name, entry: { payload?: { mod?: number } }) => {
               const mod = entry.payload?.mod ?? 0
-              return [`${value} (${formatModifier(mod)})`, 'Score']
+              return [`${String(value)} (${formatModifier(mod)})`, 'Score']
             }}
             contentStyle={{
               backgroundColor: 'var(--color-surface)',
