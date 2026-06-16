@@ -33,10 +33,12 @@
 
 ## Fase 3 — Analisi e Statistiche
 - [x] Calcolo HP, CA, iniziativa, spell slot (nel motore delle regole)
-- [ ] Calcolo DPR (danni per round)
-- [ ] Simulatore probabilistico (Monte Carlo)
-- [ ] Dashboard grafica per singola build
-- [ ] Radar chart e grafici di progressione
+- [x] Calcolo DPR (danni per round) — DprCalculator nel tab Stats
+- [x] Radar chart abilità (tab Stats nella scheda personaggio)
+- [x] Grafici di progressione HP/CA/PB/Initiative per livello (ProgressionChart)
+- [x] Endpoint GET /characters/{id}/progression
+- [ ] Simulatore probabilistico Monte Carlo
+- [ ] Confronto build differenziale visuale
 
 ## Fase 4 — Confronto e AI
 - [x] Endpoint AI advisor (advise + compare) — solo backend
