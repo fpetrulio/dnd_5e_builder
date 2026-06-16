@@ -3,8 +3,8 @@ import { Sword, Users, GitCompare, Package, Home } from 'lucide-react'
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
-  { to: '/characters', icon: Sword, label: 'Personaggi' },
-  { to: '/compare', icon: GitCompare, label: 'Confronta' },
+  { to: '/characters', icon: Sword, label: 'Characters' },
+  { to: '/compare', icon: GitCompare, label: 'Compare' },
   { to: '/party', icon: Users, label: 'Party' },
   { to: '/homebrew', icon: Package, label: 'Homebrew' },
 ] as const

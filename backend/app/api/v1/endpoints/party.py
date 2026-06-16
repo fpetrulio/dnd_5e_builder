@@ -29,7 +29,7 @@ async def create_party(body: dict[str, Any], db: AsyncSession = Depends(get_db))
 async def get_party(party_id: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
     party = await db.get(Party, party_id)
     if not party:
-        raise HTTPException(404, "Party non trovato")
+        raise HTTPException(404, "Party not found")
     return {"id": party.id, "name": party.name, "members": [m.character_id for m in party.members]}
 
 

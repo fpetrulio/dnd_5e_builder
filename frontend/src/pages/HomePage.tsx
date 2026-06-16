@@ -3,7 +3,7 @@ export default function HomePage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">D&D 5e Character Builder</h1>
       <p className="text-muted-foreground">
-        Crea, gestisci e ottimizza i tuoi personaggi per Dungeons &amp; Dragons 5a Edizione.
+        Create, manage and optimize your characters for Dungeons &amp; Dragons 5th Edition.
       </p>
     </div>
   )

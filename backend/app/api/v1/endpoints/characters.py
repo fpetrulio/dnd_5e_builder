@@ -37,7 +37,7 @@ async def create_character(
 async def get_character(character_id: str, db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
     char = await db.get(Character, character_id)
     if not char:
-        raise HTTPException(404, "Personaggio non trovato")
+        raise HTTPException(404, "Character not found")
     return {"id": char.id, "name": char.name, "state": char.state}
 
 
@@ -47,7 +47,7 @@ async def update_character(
 ) -> dict[str, Any]:
     char = await db.get(Character, character_id)
     if not char:
-        raise HTTPException(404, "Personaggio non trovato")
+        raise HTTPException(404, "Character not found")
     if "name" in body:
         char.name = body["name"]
     if "state" in body:
@@ -60,7 +60,7 @@ async def update_character(
 async def delete_character(character_id: str, db: AsyncSession = Depends(get_db)):
     char = await db.get(Character, character_id)
     if not char:
-        raise HTTPException(404, "Personaggio non trovato")
+        raise HTTPException(404, "Character not found")
     await db.delete(char)
     await db.commit()
 
@@ -76,7 +76,7 @@ async def get_snapshot(
     )
     snap = result.scalar_one_or_none()
     if not snap:
-        raise HTTPException(404, f"Snapshot al livello {level} non trovato")
+        raise HTTPException(404, f"Snapshot at level {level} not found")
     return {"character_id": character_id, "level": level, "state": snap.state}
 
 
@@ -86,7 +86,7 @@ async def level_up(
 ) -> dict[str, Any]:
     char = await db.get(Character, character_id)
     if not char:
-        raise HTTPException(404, "Personaggio non trovato")
+        raise HTTPException(404, "Character not found")
     state = char.state
     current_level = state.get("current_level", 1)
     # Save snapshot of current level before advancing
@@ -110,7 +110,7 @@ async def revert_to_level(
 ) -> dict[str, Any]:
     char = await db.get(Character, character_id)
     if not char:
-        raise HTTPException(404, "Personaggio non trovato")
+        raise HTTPException(404, "Character not found")
     result = await db.execute(
         select(CharacterSnapshot).where(
             CharacterSnapshot.character_id == character_id, CharacterSnapshot.level == level
@@ -118,7 +118,7 @@ async def revert_to_level(
     )
     snap = result.scalar_one_or_none()
     if not snap:
-        raise HTTPException(404, f"Snapshot al livello {level} non trovato")
+        raise HTTPException(404, f"Snapshot at level {level} not found")
     char.state = snap.state
     await db.commit()
     return {"current_level": level, "state": char.state}

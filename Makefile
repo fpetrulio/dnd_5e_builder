@@ -17,40 +17,40 @@ endif
 
 # ─── Aiuto ────────────────────────────────────────────────────────────────────
 help:
-	@echo "Comandi disponibili:"
-	@echo "  make setup        Prima installazione completa"
-	@echo "  make dev          Avvia backend + frontend in watch mode"
-	@echo "  make build        Build di produzione"
-	@echo "  make docker-up    Avvia con Docker Compose"
-	@echo "  make docker-down  Ferma i container"
-	@echo "  make docker-build Rebuild delle immagini Docker"
-	@echo "  make test         Esegui i test"
+	@echo "Available commands:"
+	@echo "  make setup        Full first-time install"
+	@echo "  make dev          Start backend + frontend in watch mode"
+	@echo "  make build        Production build"
+	@echo "  make docker-up    Start with Docker Compose"
+	@echo "  make docker-down  Stop containers"
+	@echo "  make docker-build Rebuild Docker images"
+	@echo "  make test         Run tests"
 	@echo "  make lint         Lint frontend + backend"
 
 # ─── Setup ────────────────────────────────────────────────────────────────────
 setup:
-	@echo ">>> Installazione dipendenze frontend..."
+	@echo ">>> Installing frontend dependencies..."
 	cd frontend && npm install --legacy-peer-deps
-	@echo ">>> Creazione virtual environment Python..."
+	@echo ">>> Creating Python virtual environment..."
 	cd backend && python -m venv .venv
-	@echo ">>> Installazione dipendenze backend..."
+	@echo ">>> Installing backend dependencies..."
 	$(PY) -m pip install -r backend/requirements.txt
-	@echo ">>> Copia .env.example -> .env (se non esiste)..."
+	@echo ">>> Copying .env.example -> .env (if missing)..."
 	@$(CPENV)
-	@echo ">>> Setup completato. Configura .env con la tua ANTHROPIC_API_KEY"
+	@echo ">>> Setup complete. Set your ANTHROPIC_API_KEY in .env"
 
 # ─── Sviluppo ─────────────────────────────────────────────────────────────────
 dev:
-	@echo ">>> Avvio dev server (backend :8000, frontend :5173)..."
+	@echo ">>> Starting dev server (backend :8000, frontend :5173)..."
 	npx concurrently --names "BACKEND,FRONTEND" --prefix-colors "blue,green" \
 		"$(UVICORN) app.main:app --reload --host 0.0.0.0 --app-dir backend" \
 		"cd frontend && npm run dev"
 
 # ─── Build ────────────────────────────────────────────────────────────────────
 build:
-	@echo ">>> Build frontend..."
+	@echo ">>> Building frontend..."
 	cd frontend && npm run build
-	@echo ">>> Build completata. Avvia con: make docker-up oppure $(UVICORN) app.main:app --app-dir backend"
+	@echo ">>> Build complete. Run with: make docker-up or $(UVICORN) app.main:app --app-dir backend"
 
 # ─── Docker ───────────────────────────────────────────────────────────────────
 docker-build:
@@ -58,8 +58,8 @@ docker-build:
 
 docker-up:
 	docker compose up -d
-	@echo ">>> App disponibile su http://localhost"
-	@echo ">>> API docs su http://localhost/api/docs"
+	@echo ">>> App available at http://localhost"
+	@echo ">>> API docs at http://localhost/api/docs"
 
 docker-down:
 	docker compose down

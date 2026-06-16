@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 import anthropic
@@ -10,7 +11,7 @@ router = APIRouter()
 
 def _get_client() -> anthropic.Anthropic:
     if not settings.anthropic_api_key:
-        raise HTTPException(503, "ANTHROPIC_API_KEY non configurata")
+        raise HTTPException(503, "ANTHROPIC_API_KEY not configured")
     return anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
 
@@ -18,34 +19,34 @@ def _get_client() -> anthropic.Anthropic:
 async def advise_build(body: dict[str, Any]) -> dict[str, Any]:
     client = _get_client()
     character_json = body.get("character_state", {})
-    goal = body.get("goal", "ottimizza la build bilanciando DPS e survivability")
+    goal = body.get("goal", "optimize the build balancing DPS and survivability")
 
-    prompt = f"""Sei un esperto ottimizzatore di build per D&D 5e.
-Analizza questo personaggio e suggerisci miglioramenti per raggiungere l'obiettivo specificato.
+    prompt = f"""You are an expert D&D 5e build optimizer.
+Analyze this character and suggest improvements to achieve the specified goal.
 
-Personaggio (JSON):
+Character (JSON):
 {character_json}
 
-Obiettivo: {goal}
+Goal: {goal}
 
-Rispondi in JSON con questo schema:
+Respond in JSON with this schema:
 {{
-  "analysis": "breve analisi della build attuale",
-  "strengths": ["punto di forza 1", ...],
-  "weaknesses": ["debolezza 1", ...],
+  "analysis": "brief analysis of the current build",
+  "strengths": ["strength 1", ...],
+  "weaknesses": ["weakness 1", ...],
   "suggestions": [
     {{
-      "priority": "alta|media|bassa",
+      "priority": "high|medium|low",
       "category": "feat|spell|subclass|multiclass|equipment",
-      "suggestion": "descrizione",
-      "reasoning": "spiegazione del perché"
+      "suggestion": "description",
+      "reasoning": "why this improves the build"
     }}
   ],
   "alternative_builds": [
     {{
-      "name": "nome build alternativa",
-      "description": "descrizione",
-      "trade_offs": "cosa si guadagna e cosa si perde"
+      "name": "alternative build name",
+      "description": "description",
+      "trade_offs": "what you gain and what you lose"
     }}
   ]
 }}"""
@@ -56,13 +57,11 @@ Rispondi in JSON con questo schema:
         messages=[{"role": "user", "content": prompt}],
     )
 
-    import json
-
     try:
         content = message.content[0].text
         start = content.find("{")
         end = content.rfind("}") + 1
-        result = json.loads(content[start:end])
+        result: dict[str, Any] = json.loads(content[start:end])
     except Exception:
         result = {"raw": message.content[0].text}
 
@@ -74,14 +73,14 @@ async def compare_builds(body: dict[str, Any]) -> dict[str, Any]:
     client = _get_client()
     builds = body.get("builds", [])
 
-    prompt = f"""Sei un esperto di D&D 5e. Confronta queste build e produci un'analisi comparativa.
+    prompt = f"""You are a D&D 5e expert. Compare these builds and produce a comparative analysis.
 
-Build da confrontare:
+Builds to compare:
 {builds}
 
-Rispondi in JSON con:
+Respond in JSON with:
 {{
-  "summary": "sommario del confronto",
+  "summary": "comparison summary",
   "comparison": {{
     "dpr": {{}},
     "survivability": {{}},
@@ -89,7 +88,7 @@ Rispondi in JSON con:
     "complexity": {{}}
   }},
   "winner_by_category": {{}},
-  "recommendation": "quale build scegliere e in quale contesto"
+  "recommendation": "which build to choose and in what context"
 }}"""
 
     message = client.messages.create(
@@ -98,13 +97,11 @@ Rispondi in JSON con:
         messages=[{"role": "user", "content": prompt}],
     )
 
-    import json
-
     try:
         content = message.content[0].text
         start = content.find("{")
         end = content.rfind("}") + 1
-        result = json.loads(content[start:end])
+        result: dict[str, Any] = json.loads(content[start:end])
     except Exception:
         result = {"raw": message.content[0].text}
 

@@ -46,6 +46,6 @@ async def create_homebrew(
 async def delete_homebrew(resource_id: str, db: AsyncSession = Depends(get_db)):
     resource = await db.get(HomebrewResource, resource_id)
     if not resource:
-        raise HTTPException(404, "Risorsa non trovata")
+        raise HTTPException(404, "Resource not found")
     await db.delete(resource)
     await db.commit()
