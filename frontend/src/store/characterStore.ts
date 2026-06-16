@@ -5,7 +5,7 @@ import type { Character, CharacterState } from '@/types/dnd'
 interface CharacterStore {
   characters: Character[]
   activeCharacterId: string | null
-  snapshotCache: Record<string, Record<number, CharacterState>>  // id → level → state
+  snapshotCache: Record<string, Record<number, CharacterState> | undefined>
 
   setCharacters: (chars: Character[]) => void
   setActiveCharacter: (id: string | null) => void

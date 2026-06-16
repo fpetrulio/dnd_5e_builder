@@ -3,6 +3,7 @@ import Layout from '@/components/Layout'
 import HomePage from '@/pages/HomePage'
 import CharactersPage from '@/pages/CharactersPage'
 import CharacterPage from '@/pages/CharacterPage'
+import CharacterWizardPage from '@/pages/CharacterWizardPage'
 import ComparePage from '@/pages/ComparePage'
 import PartyPage from '@/pages/PartyPage'
 import HomebrewPage from '@/pages/HomebrewPage'
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="characters" element={<CharactersPage />} />
+          <Route path="characters/new" element={<CharacterWizardPage />} />
           <Route path="characters/:id" element={<CharacterPage />} />
           <Route path="compare" element={<ComparePage />} />
           <Route path="party" element={<PartyPage />} />

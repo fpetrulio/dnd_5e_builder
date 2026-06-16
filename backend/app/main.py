@@ -12,6 +12,9 @@ from app.core.database import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Ensure data directory exists
+    data_dir = Path(__file__).parent.parent / "data"
+    data_dir.mkdir(exist_ok=True)
     await init_db()
     yield
 

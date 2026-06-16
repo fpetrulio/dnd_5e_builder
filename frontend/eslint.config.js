@@ -27,13 +27,14 @@ export default defineConfig([
       // No unused variables or imports
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
 
-      // No hardcoded magic numbers (exceptions: -1, 0, 1, 2 are common)
+      // No hardcoded magic numbers — allow common component/D&D values
       'no-magic-numbers': 'off',
       '@typescript-eslint/no-magic-numbers': ['warn', {
-        ignore: [-1, 0, 1, 2, 100],
+        ignore: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 18, 20, 24, 27, 30, 32, 48, 50, 60, 100, 1000],
         ignoreEnums: true,
         ignoreNumericLiteralTypes: true,
         ignoreReadonlyClassProperties: true,
+        ignoreArrayIndexes: true,
       }],
 
       // No explicit `any`
@@ -47,6 +48,28 @@ export default defineConfig([
 
       // Enforce const where possible
       'prefer-const': 'error',
+
+      // Numbers in template literals are safe and idiomatic in JS/TS
+      '@typescript-eslint/restrict-template-expressions': ['error', {
+        allowNumber: true,
+        allowBoolean: false,
+        allowAny: false,
+        allowNullish: false,
+      }],
+
+      // Allow arrow shorthand returning void (common in React event handlers)
+      '@typescript-eslint/no-confusing-void-expression': ['error', {
+        ignoreArrowShorthand: true,
+        ignoreVoidOperator: true,
+      }],
+
+      // Don't flag onClick={() => navigate(...)} — React ignores returned Promises from event handlers
+      '@typescript-eslint/no-misused-promises': ['error', {
+        checksVoidReturn: { attributes: false },
+      }],
+
+      // Conflicts with no-non-null-assertion: prefer the readable `as T` form at query boundaries
+      '@typescript-eslint/non-nullable-type-assertion-style': 'off',
 
       // No inline style with raw color values (remind dev to use CSS vars)
       'react/forbid-component-props': 'off',

@@ -6,12 +6,14 @@ ifeq ($(OS),Windows_NT)
     PYTEST  := backend/.venv/Scripts/pytest
     UVICORN := backend/.venv/Scripts/uvicorn
     RUFF    := backend/.venv/Scripts/ruff
+    MYPY    := backend/.venv/Scripts/mypy
     CPENV   := if not exist .env copy .env.example .env
 else
     PY      := backend/.venv/bin/python
     PYTEST  := backend/.venv/bin/pytest
     UVICORN := backend/.venv/bin/uvicorn
     RUFF    := backend/.venv/bin/ruff
+    MYPY    := backend/.venv/bin/mypy
     CPENV   := test -f .env || cp .env.example .env
 endif
 
@@ -76,3 +78,4 @@ test:
 lint:
 	cd frontend && npm run lint
 	$(RUFF) check backend/
+	$(MYPY) backend/app --ignore-missing-imports --python-version 3.12

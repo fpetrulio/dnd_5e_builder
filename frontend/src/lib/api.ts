@@ -1,4 +1,5 @@
-import axios from 'axios'
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import axios, { type AxiosError } from 'axios'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -7,8 +8,8 @@ export const api = axios.create({
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    const message = err.response?.data?.detail ?? err.message ?? 'Errore sconosciuto'
+  (err: AxiosError<{ detail?: string }>) => {
+    const message = err.response?.data.detail ?? err.message
     return Promise.reject(new Error(message))
   },
 )

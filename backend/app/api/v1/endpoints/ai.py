@@ -2,11 +2,17 @@ import json
 from typing import Any
 
 import anthropic
+from anthropic.types import TextBlock
 from fastapi import APIRouter, HTTPException
 
 from app.core.config import settings
 
 router = APIRouter()
+
+
+def _extract_text(message: anthropic.types.Message) -> str:
+    block = message.content[0] if message.content else None
+    return block.text if isinstance(block, TextBlock) else ""
 
 
 def _get_client() -> anthropic.Anthropic:
@@ -58,12 +64,12 @@ Respond in JSON with this schema:
     )
 
     try:
-        content = message.content[0].text
+        content = _extract_text(message)
         start = content.find("{")
         end = content.rfind("}") + 1
         result: dict[str, Any] = json.loads(content[start:end])
     except Exception:
-        result = {"raw": message.content[0].text}
+        result = {"raw": _extract_text(message)}
 
     return result
 
@@ -98,11 +104,11 @@ Respond in JSON with:
     )
 
     try:
-        content = message.content[0].text
+        content = _extract_text(message)
         start = content.find("{")
         end = content.rfind("}") + 1
         result: dict[str, Any] = json.loads(content[start:end])
     except Exception:
-        result = {"raw": message.content[0].text}
+        result = {"raw": _extract_text(message)}
 
     return result

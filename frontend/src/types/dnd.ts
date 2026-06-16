@@ -4,7 +4,7 @@ export type AbilityScore = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha'
 
 export type AbilityScores = Record<AbilityScore, number>
 
-export type DiceExpression = {
+export interface DiceExpression {
   count: number
   die: number   // d4=4, d6=6, d8=8, d10=10, d12=12, d20=20
   bonus?: number

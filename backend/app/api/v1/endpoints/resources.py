@@ -1,54 +1,38 @@
+from __future__ import annotations
+
 from typing import Any
 
-import httpx
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
+from app.core.database import get_db
+from app.services.importer.open5e import get_backgrounds, get_classes, get_races, get_spells
 
 router = APIRouter()
 
-_http = httpx.AsyncClient(base_url=settings.open5e_base_url, timeout=10.0)
-
-
-async def _fetch(path: str, params: dict | None = None) -> Any:
-    r = await _http.get(path, params=params or {})
-    r.raise_for_status()
-    return r.json()
-
 
 @router.get("/classes")
-async def get_classes() -> Any:
-    return await _fetch("/classes/")
+async def list_classes(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
+    return await get_classes(db)
 
 
 @router.get("/races")
-async def get_races() -> Any:
-    return await _fetch("/races/")
+async def list_races(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
+    return await get_races(db)
 
 
 @router.get("/backgrounds")
-async def get_backgrounds() -> Any:
-    return await _fetch("/backgrounds/")
-
-
-@router.get("/feats")
-async def get_feats() -> Any:
-    return await _fetch("/feats/")
+async def list_backgrounds(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
+    return await get_backgrounds(db)
 
 
 @router.get("/spells")
-async def get_spells(
+async def list_spells(
     level: int | None = Query(None),
     classes: str | None = Query(None),
     school: str | None = Query(None),
     limit: int = Query(50, le=200),
     offset: int = Query(0),
-) -> Any:
-    params: dict[str, Any] = {"limit": limit, "offset": offset}
-    if level is not None:
-        params["level_int"] = level
-    if classes:
-        params["dnd_class"] = classes
-    if school:
-        params["school"] = school
-    return await _fetch("/spells/", params)
+    db: AsyncSession = Depends(get_db),
+) -> list[dict[str, Any]]:
+    return await get_spells(db, level=level, class_name=classes, limit=limit, offset=offset)
