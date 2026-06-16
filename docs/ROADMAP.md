@@ -54,14 +54,16 @@
 - [ ] Import/export pacchetti homebrew
 
 ## Fase 6 — Party Builder
-- [ ] Composizione party
-- [ ] Dashboard copertura ruoli
-- [ ] Ottimizzazione contestuale al party
+- [x] Composizione party (crea/elimina party, aggiungi/rimuovi membri)
+- [x] Dashboard copertura ruoli (frontline/spellcaster/healer/striker/controller/support)
+- [x] Scheda membro con HP, CA, classe, livello
+- [ ] Ottimizzazione contestuale al party (AI suggestions per ruoli mancanti)
 - [ ] Sinergie di gruppo e simulazione encounter
 
 ## Fase 7 — Export e Condivisione
+- [x] Export JSON scheda personaggio (download diretto)
+- [x] Condivisione build via link (copia URL negli appunti)
 - [ ] Export PDF scheda personaggio
-- [ ] Condivisione build via link
 - [ ] Import da JSON / D&D Beyond
 
 ## Fase 8 — Simulatore di Encounter
