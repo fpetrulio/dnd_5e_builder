@@ -1,6 +1,7 @@
 {
   "permissions": {
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "bypassPermissions",
+    "additionalDirectories": [".claude"]
   },
   "attribution": {
     "commit": "",
