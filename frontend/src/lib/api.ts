@@ -55,8 +55,12 @@ export const resourcesApi = {
 export const partyApi = {
   list: () => api.get('/party').then((r) => r.data),
   get: (id: string) => api.get(`/party/${id}`).then((r) => r.data),
-  create: (data: unknown) => api.post('/party', data).then((r) => r.data),
-  optimize: (id: string) => api.get(`/party/${id}/optimize`).then((r) => r.data),
+  create: (name: string) => api.post('/party', { name }).then((r) => r.data),
+  delete: (id: string) => api.delete(`/party/${id}`),
+  addMember: (partyId: string, characterId: string) =>
+    api.post(`/party/${partyId}/members`, { character_id: characterId }).then((r) => r.data),
+  removeMember: (partyId: string, characterId: string) =>
+    api.delete(`/party/${partyId}/members/${characterId}`),
 }
 
 // ─── AI ──────────────────────────────────────────────────────────────────────

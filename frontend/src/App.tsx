@@ -8,6 +8,7 @@ import LevelUpWizardPage from '@/pages/LevelUpWizardPage'
 import SnapshotPage from '@/pages/SnapshotPage'
 import ComparePage from '@/pages/ComparePage'
 import PartyPage from '@/pages/PartyPage'
+import PartyDetailPage from '@/pages/PartyDetailPage'
 import HomebrewPage from '@/pages/HomebrewPage'
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="characters/:id/snapshot/:level" element={<SnapshotPage />} />
           <Route path="compare" element={<ComparePage />} />
           <Route path="party" element={<PartyPage />} />
+          <Route path="party/:id" element={<PartyDetailPage />} />
           <Route path="homebrew" element={<HomebrewPage />} />
         </Route>
       </Routes>
