@@ -1,0 +1,25 @@
+# Sviluppo locale con hot reload — usa insieme al docker-compose.yml base
+# docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: builder        # usa lo stesso Dockerfile ma senza ottimizzazioni prod
+    volumes:
+      - ./backend:/app       # mount del codice sorgente per hot reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - DEBUG=true
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host
+    environment:
+      - VITE_API_URL=http://localhost:8000
