@@ -86,6 +86,8 @@ class LevelUpChoicesIn(BaseModel):
     subclass_id: str | None = None
     asi_choice: ASIChoiceIn | None = None
     new_skill_proficiencies: list[str] = Field(default_factory=list)
+    # If set, level up this class instead of the primary class (multiclassing)
+    new_class_id: str | None = None
 
 
 class SnapshotOut(BaseModel):

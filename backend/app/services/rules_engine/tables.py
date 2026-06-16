@@ -108,6 +108,24 @@ ARMOR_TABLE: dict[str, tuple[int, str]] = {
     "plate": (18, "heavy"),
 }
 
+# Multiclass prerequisites (PHB p.163).
+# Each value is a list of AND-groups; the character must satisfy ALL entries in any ONE group.
+MULTICLASS_PREREQS: dict[str, list[dict[str, int]]] = {
+    "artificer": [{"int": 13}],
+    "barbarian": [{"str": 13}],
+    "bard":      [{"cha": 13}],
+    "cleric":    [{"wis": 13}],
+    "druid":     [{"wis": 13}],
+    "fighter":   [{"str": 13}, {"dex": 13}],       # STR 13 OR DEX 13
+    "monk":      [{"dex": 13, "wis": 13}],           # DEX 13 AND WIS 13
+    "paladin":   [{"str": 13, "cha": 13}],           # STR 13 AND CHA 13
+    "ranger":    [{"dex": 13, "wis": 13}],           # DEX 13 AND WIS 13
+    "rogue":     [{"dex": 13}],
+    "sorcerer":  [{"cha": 13}],
+    "warlock":   [{"cha": 13}],
+    "wizard":    [{"int": 13}],
+}
+
 # Armor types each class is proficient with: "light" | "medium" | "heavy" | "shield"
 ARMOR_PROFICIENCIES: dict[str, list[str]] = {
     "artificer": ["light", "medium", "shield"],

@@ -3,8 +3,9 @@ import { ChevronLeft, ChevronRight, Check, Dice6, Loader2, Sparkles } from 'luci
 import { cn, slugToLabel, formatModifier } from '@/lib/utils'
 import { useLevelUpInfo, useLevelUp } from '@/hooks/useCharacters'
 import type { LevelUpChoices, ASIChoice } from '@/hooks/useCharacters'
-import { useClassFeatures, useSubclasses } from '@/hooks/useResources'
+import { useClassFeatures, useClasses, useSubclasses } from '@/hooks/useResources'
 import type { ClassFeatureApi, SubclassApi } from '@/hooks/useResources'
+import type { MulticlassOption } from '@/hooks/useCharacters'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -48,6 +49,9 @@ export default function LevelUpWizard({
   const [rolledHp, setRolledHp] = useState<number | null>(null)
   const [manualHp, setManualHp] = useState<string>('')
 
+  // Multiclass state — null = level up primary class
+  const [chosenClassId, setChosenClassId] = useState<string | null>(null)
+
   // Subclass state
   const [selectedSubclassId, setSelectedSubclassId] = useState<string | null>(null)
 
@@ -58,13 +62,33 @@ export default function LevelUpWizard({
   const [abilityB, setAbilityB] = useState<string>('')
   const [featName, setFeatName] = useState('')
 
+  const { data: allClasses = [] } = useClasses()
+
+  // Resolve which class/level info to use based on user's choice
+  const multiclassOptions = info?.multiclass_options ?? []
+  const primaryClassId = info?.class_id ?? ''
+  const activeClassId = chosenClassId ?? primaryClassId
+
+  const activeOption: MulticlassOption | undefined = chosenClassId
+    ? multiclassOptions.find((o) => o.class_id === chosenClassId)
+    : undefined
+
+  // Use active option info if multiclassing, otherwise use top-level info
+  const activeNewClassLevel = activeOption?.new_level ?? info?.new_class_level ?? 1
+  const activeDie = activeOption?.hit_die ?? info?.hit_die ?? 8
+  const activeAverageHp = activeOption?.average_hp ?? info?.average_hp ?? (Math.ceil(activeDie / 2) + 1)
+  const activeHasAsi = activeOption?.has_asi ?? info?.has_asi ?? false
+  const activeHasSubclass = activeOption?.has_subclass_choice ?? info?.has_subclass_choice ?? false
+
   const { data: allFeatures = [] } = useClassFeatures(
-    info?.class_id,
-    info?.new_class_level ?? 0,
+    activeClassId || undefined,
+    activeNewClassLevel,
   )
   const { data: subclassList = [], isLoading: subclassesLoading } = useSubclasses(
-    info?.has_subclass_choice ? info.class_id : undefined,
+    activeHasSubclass ? activeClassId : undefined,
   )
+
+  const hasMulticlassOptions = multiclassOptions.length > 0
 
   if (isLoading) {
     return (
@@ -84,19 +108,17 @@ export default function LevelUpWizard({
   }
 
   const newLevel = info.new_total_level ?? 1
-  const newClassLevel = info.new_class_level ?? 1
-  const die = info.hit_die ?? 8
-  const averageHp = info.average_hp ?? (Math.ceil(die / 2) + 1)
-  const newFeatures = allFeatures.filter((f: ClassFeatureApi) => f.level === newClassLevel)
+  const newFeatures = allFeatures.filter((f: ClassFeatureApi) => f.level === activeNewClassLevel)
 
-  // Build step list dynamically based on what's needed
-  const steps = [
+  // Build step list dynamically
+  const steps: string[] = [
     'overview',
+    ...(hasMulticlassOptions ? ['class'] : []),
     'hp',
-    ...(info.has_subclass_choice ? ['subclass'] : []),
-    ...(info.has_asi ? ['asi'] : []),
+    ...(activeHasSubclass ? ['subclass'] : []),
+    ...(activeHasAsi ? ['asi'] : []),
     'confirm',
-  ] as const
+  ]
 
   const totalSteps = steps.length
   const currentStep: string = steps[step]
@@ -106,7 +128,7 @@ export default function LevelUpWizard({
       if (hpMethod === 'roll' && rolledHp === null) return false
       if (hpMethod === 'manual') {
         const val = parseInt(manualHp, 10)
-        if (isNaN(val) || val < 1 || val > die) return false
+        if (isNaN(val) || val < 1 || val > activeDie) return false
       }
     }
     if (currentStep === 'asi') {
@@ -118,7 +140,7 @@ export default function LevelUpWizard({
   }
 
   const rollDie = () => {
-    const roll = Math.ceil(Math.random() * die)
+    const roll = Math.ceil(Math.random() * activeDie)
     setRolledHp(roll)
   }
 
@@ -128,7 +150,7 @@ export default function LevelUpWizard({
     else if (hpMethod === 'manual') hpVal = parseInt(manualHp, 10)
 
     let asiChoice: ASIChoice | undefined
-    if (info.has_asi) {
+    if (activeHasAsi) {
       asiChoice = {
         method: asiMethod,
         ability_single: asiMethod === 'single' ? abilitySingle : undefined,
@@ -143,6 +165,7 @@ export default function LevelUpWizard({
       hp_value: hpVal,
       subclass_id: selectedSubclassId ?? undefined,
       asi_choice: asiChoice,
+      new_class_id: chosenClassId ?? undefined,
     }
 
     await levelUp(choices)
@@ -162,6 +185,12 @@ export default function LevelUpWizard({
         <h1 className="text-2xl font-bold">{characterName}</h1>
         <p className="opacity-60 text-sm">
           Level Up — reaching level <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>{newLevel}</span>
+          {chosenClassId !== null && (
+            <span className="ml-1">
+              · <span style={{ color: 'var(--color-primary)' }}>{slugToLabel(chosenClassId)}</span>
+              {(activeOption?.current_level ?? 0) > 0 && ` Lv ${activeNewClassLevel}`}
+            </span>
+          )}
         </p>
       </div>
 
@@ -210,7 +239,7 @@ export default function LevelUpWizard({
             </div>
           )}
 
-          {info.has_asi && (
+          {activeHasAsi && (
             <div
               className="rounded-lg border p-3 text-sm"
               style={{ borderColor: 'var(--color-primary)', backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
@@ -219,7 +248,7 @@ export default function LevelUpWizard({
             </div>
           )}
 
-          {info.has_subclass_choice && (
+          {activeHasSubclass && (
             <div
               className="rounded-lg border p-3 text-sm"
               style={{ borderColor: 'var(--color-primary)', backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, transparent)' }}
@@ -235,7 +264,7 @@ export default function LevelUpWizard({
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Hit Points</h2>
           <p className="text-sm opacity-60">
-            Hit die: <strong>d{die}</strong> · Average: <strong>{averageHp}</strong> (max {die})
+            Hit die: <strong>d{activeDie}</strong> · Average: <strong>{activeAverageHp}</strong> (max {activeDie})
           </p>
 
           {/* Average */}
@@ -259,11 +288,11 @@ export default function LevelUpWizard({
             />
             <div>
               <div className="font-medium text-sm">Take average</div>
-              <div className="text-xs opacity-60">+{averageHp} HP (always safe choice)</div>
+              <div className="text-xs opacity-60">+{activeAverageHp} HP (always safe choice)</div>
             </div>
             {hpMethod === 'average' && (
               <div className="ml-auto text-lg font-bold" style={{ color: 'var(--color-primary)' }}>
-                +{averageHp}
+                +{activeAverageHp}
               </div>
             )}
           </label>
@@ -286,7 +315,7 @@ export default function LevelUpWizard({
             />
             <div className="flex-1">
               <div className="font-medium text-sm">Roll the die</div>
-              <div className="text-xs opacity-60 mb-2">1d{die} (min 1)</div>
+              <div className="text-xs opacity-60 mb-2">1d{activeDie} (min 1)</div>
               {hpMethod === 'roll' && (
                 <div className="flex items-center gap-3">
                   <button
@@ -295,7 +324,7 @@ export default function LevelUpWizard({
                     className="flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-opacity hover:opacity-80"
                     style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-bg)' }}
                   >
-                    <Dice6 size={14} /> Roll d{die}
+                    <Dice6 size={14} /> Roll d{activeDie}
                   </button>
                   {rolledHp !== null && (
                     <span className="text-lg font-bold" style={{ color: 'var(--color-primary)' }}>
@@ -325,15 +354,15 @@ export default function LevelUpWizard({
             />
             <div className="flex-1">
               <div className="font-medium text-sm">Enter manually</div>
-              <div className="text-xs opacity-60 mb-2">Type your rolled result (1–{die})</div>
+              <div className="text-xs opacity-60 mb-2">Type your rolled result (1–{activeDie})</div>
               {hpMethod === 'manual' && (
                 <input
                   type="number"
                   min={1}
-                  max={die}
+                  max={activeDie}
                   value={manualHp}
                   onChange={(e) => setManualHp(e.target.value)}
-                  placeholder={`1–${die}`}
+                  placeholder={`1–${activeDie}`}
                   className="w-20 px-2 py-1 rounded border text-sm text-center"
                   style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg)' }}
                   onClick={(e) => e.stopPropagation()}
@@ -344,12 +373,96 @@ export default function LevelUpWizard({
         </div>
       )}
 
+      {/* ── Step: Class choice ────────────────────────────────────── */}
+      {currentStep === 'class' && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Choose How to Level Up</h2>
+
+          {/* Continue primary class */}
+          <button
+            type="button"
+            onClick={() => { setChosenClassId(null); setSelectedSubclassId(null) }}
+            className="w-full text-left rounded-lg border p-3 transition-all hover:opacity-90"
+            style={{
+              borderColor: chosenClassId === null ? 'var(--color-primary)' : 'var(--color-border)',
+              backgroundColor: chosenClassId === null
+                ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)'
+                : 'var(--color-surface)',
+            }}
+          >
+            <div className="font-medium text-sm" style={{ color: chosenClassId === null ? 'var(--color-primary)' : 'inherit' }}>
+              {slugToLabel(primaryClassId)} — level {(info.new_class_level ?? 1) - 1} → {info.new_class_level ?? 1}
+            </div>
+            <div className="text-xs opacity-60 mt-0.5">Continue your primary class</div>
+          </button>
+
+          {/* Existing secondary classes */}
+          {multiclassOptions.filter((o) => !o.is_new_class).map((opt) => (
+            <button
+              key={opt.class_id}
+              type="button"
+              onClick={() => { setChosenClassId(opt.class_id); setSelectedSubclassId(null) }}
+              className="w-full text-left rounded-lg border p-3 transition-all hover:opacity-90"
+              style={{
+                borderColor: chosenClassId === opt.class_id ? 'var(--color-primary)' : 'var(--color-border)',
+                backgroundColor: chosenClassId === opt.class_id
+                  ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)'
+                  : 'var(--color-surface)',
+              }}
+            >
+              <div className="font-medium text-sm" style={{ color: chosenClassId === opt.class_id ? 'var(--color-primary)' : 'inherit' }}>
+                {slugToLabel(opt.class_id)} — level {opt.current_level} → {opt.new_level}
+              </div>
+              <div className="text-xs opacity-60 mt-0.5">Continue secondary class · d{opt.hit_die} HP</div>
+            </button>
+          ))}
+
+          {/* New classes */}
+          <p className="text-xs font-medium opacity-50 uppercase tracking-wide pt-1">Add a new class</p>
+          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            {multiclassOptions.filter((o) => o.is_new_class).map((opt) => {
+              const classData = allClasses.find((c) => c.id === opt.class_id)
+              return (
+                <button
+                  key={opt.class_id}
+                  type="button"
+                  disabled={!opt.meets_prereqs}
+                  onClick={() => { setChosenClassId(opt.class_id); setSelectedSubclassId(null) }}
+                  className={cn(
+                    'w-full text-left rounded-lg border p-3 transition-all',
+                    opt.meets_prereqs ? 'hover:opacity-90' : 'opacity-40 cursor-not-allowed',
+                  )}
+                  style={{
+                    borderColor: chosenClassId === opt.class_id ? 'var(--color-primary)' : 'var(--color-border)',
+                    backgroundColor: chosenClassId === opt.class_id
+                      ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)'
+                      : 'var(--color-surface)',
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium text-sm" style={{ color: chosenClassId === opt.class_id ? 'var(--color-primary)' : 'inherit' }}>
+                      {classData?.name ?? slugToLabel(opt.class_id)}
+                    </div>
+                    <div className="text-xs opacity-60 font-mono">d{opt.hit_die}</div>
+                  </div>
+                  {!opt.meets_prereqs && opt.missing_prereqs && (
+                    <div className="text-xs mt-0.5" style={{ color: 'var(--color-primary)', opacity: 0.8 }}>
+                      Requires {opt.missing_prereqs}
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Step: Subclass ─────────────────────────────────────────── */}
       {currentStep === 'subclass' && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Choose Your Archetype</h2>
           <p className="text-sm opacity-60">
-            At level {newClassLevel}, your {slugToLabel(info.class_id ?? '')} chooses a subclass. You can skip and decide later.
+            At level {activeNewClassLevel}, your {slugToLabel(activeClassId)} chooses a subclass. You can skip and decide later.
           </p>
 
           {subclassesLoading ? (
@@ -537,15 +650,27 @@ export default function LevelUpWizard({
               label="HP gain"
               value={
                 hpMethod === 'average'
-                  ? `+${averageHp} (average)`
+                  ? `+${activeAverageHp} (average)`
                   : hpMethod === 'roll'
                     ? `+${rolledHp ?? '?'} (rolled)`
                     : `+${manualHp} (manual)`
               }
             />
 
+            {/* Multiclass */}
+            {chosenClassId !== null && (
+              <SummaryRow
+                label="New class"
+                value={
+                  (activeOption?.current_level ?? 0) > 0
+                    ? `${slugToLabel(chosenClassId)} (level ${activeNewClassLevel})`
+                    : `${slugToLabel(chosenClassId)} (new)`
+                }
+              />
+            )}
+
             {/* Subclass */}
-            {info.has_subclass_choice && (
+            {activeHasSubclass && (
               <SummaryRow
                 label="Subclass"
                 value={
@@ -557,7 +682,7 @@ export default function LevelUpWizard({
             )}
 
             {/* ASI */}
-            {info.has_asi && (
+            {activeHasAsi && (
               <SummaryRow
                 label="ASI"
                 value={

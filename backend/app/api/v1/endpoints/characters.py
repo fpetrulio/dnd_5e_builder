@@ -18,12 +18,53 @@ from app.schemas.character import (
     SnapshotOut,
 )
 from app.services.rules_engine import compute_stats
-from app.services.rules_engine.tables import ASI_LEVELS, HIT_DICE, SUBCLASS_LEVELS
+from app.services.rules_engine.tables import (
+    ASI_LEVELS,
+    HIT_DICE,
+    MULTICLASS_PREREQS,
+    SUBCLASS_LEVELS,
+)
 
 router = APIRouter()
 
 MAX_LEVEL = 20
 PRIMARY_CLASS_IDX = 0
+ABILITY_LABELS: dict[str, str] = {
+    "str": "STR", "dex": "DEX", "con": "CON",
+    "int": "INT", "wis": "WIS", "cha": "CHA",
+}
+
+
+def _check_prereqs(class_id: str, scores: dict[str, int]) -> tuple[bool, str | None]:
+    """Return (meets, missing_description). Any one AND-group must be fully satisfied."""
+    groups = MULTICLASS_PREREQS.get(class_id, [])
+    if not groups:
+        return True, None
+    for group in groups:
+        if all(scores.get(ab, 0) >= min_val for ab, min_val in group.items()):
+            return True, None
+    # Build a human-readable description of what's needed
+    parts = [
+        " and ".join(f"{ABILITY_LABELS[ab]} {v}" for ab, v in group.items())
+        for group in groups
+    ]
+    return False, " or ".join(parts)
+
+
+def _class_level_up_info(
+    class_id: str, new_class_level: int, existing_subclass: str | None
+) -> dict[str, Any]:
+    die: int = HIT_DICE.get(class_id, 8)
+    return {
+        "class_id": class_id,
+        "hit_die": die,
+        "average_hp": math.ceil(die / 2) + 1,
+        "has_asi": new_class_level in ASI_LEVELS.get(class_id, []),
+        "has_subclass_choice": (
+            new_class_level == SUBCLASS_LEVELS.get(class_id, 3)
+            and not existing_subclass
+        ),
+    }
 
 
 def _build_response(char: Character) -> dict[str, Any]:
@@ -171,21 +212,37 @@ async def level_up(
     new_state: dict[str, Any] = dict(state)
     new_classes: list[dict[str, Any]] = [dict(c) for c in classes]
 
-    # Level up primary class
-    primary = new_classes[PRIMARY_CLASS_IDX]
-    new_class_level: int = primary.get("level", 1) + 1
-    primary["level"] = new_class_level
-    class_id: str = str(primary.get("class_id", "fighter"))
+    # Determine which class entry to level up
+    target_class_id: str = choices.new_class_id or str(
+        new_classes[PRIMARY_CLASS_IDX].get("class_id", "fighter")
+    )
 
-    # Apply subclass if offered
-    if choices.subclass_id and not primary.get("subclass_id"):
-        primary["subclass_id"] = choices.subclass_id
+    existing_entry: dict[str, Any] | None = next(
+        (c for c in new_classes if c.get("class_id") == target_class_id), None
+    )
+
+    if existing_entry is not None:
+        new_class_level: int = existing_entry.get("level", 1) + 1
+        existing_entry["level"] = new_class_level
+        if choices.subclass_id and not existing_entry.get("subclass_id"):
+            existing_entry["subclass_id"] = choices.subclass_id
+    else:
+        # Starting a new multiclass entry at level 1
+        scores_check: dict[str, int] = state.get("ability_scores", {})
+        meets, missing = _check_prereqs(target_class_id, scores_check)
+        if not meets:
+            raise HTTPException(400, f"Missing multiclass prerequisites: {missing}")
+        new_class_level = 1
+        new_entry: dict[str, Any] = {"class_id": target_class_id, "level": 1}
+        if choices.subclass_id:
+            new_entry["subclass_id"] = choices.subclass_id
+        new_classes.append(new_entry)
 
     new_state["classes"] = new_classes
     new_state["current_level"] = total_level + 1
 
-    # HP roll — store raw die value; engine adds CON modifier per level
-    die: int = HIT_DICE.get(class_id, 8)
+    # HP — use the die of the class that was leveled
+    die: int = HIT_DICE.get(target_class_id, 8)
     avg: int = math.ceil(die / 2) + 1
 
     if choices.hp_method == "average":
@@ -214,7 +271,7 @@ async def level_up(
             new_state["feats"] = feats
         new_state["ability_scores"] = scores
 
-    # Extra skill proficiencies (e.g. Expertise, Rogue extras)
+    # Extra skill proficiencies
     if choices.new_skill_proficiencies:
         profs: list[str] = list(state.get("skill_proficiencies", []))
         for skill in choices.new_skill_proficiencies:
@@ -314,23 +371,54 @@ async def get_level_up_info(
     if total_level >= MAX_LEVEL:
         return {"can_level_up": False, "reason": "Already at max level"}
 
+    # Primary class info
     primary = classes[PRIMARY_CLASS_IDX]
     class_id: str = str(primary.get("class_id", "fighter"))
     new_class_level: int = primary.get("level", 1) + 1
-    die: int = HIT_DICE.get(class_id, 8)
 
-    asi_levels = ASI_LEVELS.get(class_id, [])
-    has_asi = new_class_level in asi_levels
-    subclass_level = SUBCLASS_LEVELS.get(class_id, 3)
-    has_subclass = new_class_level == subclass_level and not primary.get("subclass_id")
+    primary_info = _class_level_up_info(class_id, new_class_level, primary.get("subclass_id"))
+    ability_scores: dict[str, int] = state.get("ability_scores", {})
+
+    # Existing secondary classes
+    existing_class_ids = {str(c.get("class_id", "")) for c in classes}
+
+    # Multiclass options: existing secondary classes + available new classes
+    multiclass_options: list[dict[str, Any]] = []
+
+    # Existing secondary classes (index 1+)
+    for c in classes[1:]:
+        cid = str(c.get("class_id", ""))
+        cur_level: int = c.get("level", 1)
+        new_lvl = cur_level + 1
+        info = _class_level_up_info(cid, new_lvl, c.get("subclass_id"))
+        multiclass_options.append({
+            **info,
+            "current_level": cur_level,
+            "new_level": new_lvl,
+            "meets_prereqs": True,
+            "missing_prereqs": None,
+            "is_new_class": False,
+        })
+
+    # New classes not yet taken
+    for cid in MULTICLASS_PREREQS:
+        if cid in existing_class_ids:
+            continue
+        meets, missing = _check_prereqs(cid, ability_scores)
+        info = _class_level_up_info(cid, 1, None)
+        multiclass_options.append({
+            **info,
+            "current_level": 0,
+            "new_level": 1,
+            "meets_prereqs": meets,
+            "missing_prereqs": missing,
+            "is_new_class": True,
+        })
 
     return {
         "can_level_up": True,
         "new_total_level": total_level + 1,
         "new_class_level": new_class_level,
-        "class_id": class_id,
-        "hit_die": die,
-        "average_hp": math.ceil(die / 2) + 1,
-        "has_asi": has_asi,
-        "has_subclass_choice": has_subclass,
+        **primary_info,
+        "multiclass_options": multiclass_options,
     }

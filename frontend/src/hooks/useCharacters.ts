@@ -16,6 +16,19 @@ export interface ProgressionPoint {
   speed: number
 }
 
+export interface MulticlassOption {
+  class_id: string
+  current_level: number   // 0 = new class
+  new_level: number
+  hit_die: number
+  average_hp: number
+  has_asi: boolean
+  has_subclass_choice: boolean
+  meets_prereqs: boolean
+  missing_prereqs: string | null
+  is_new_class: boolean
+}
+
 export interface LevelUpInfo {
   can_level_up: boolean
   reason?: string
@@ -26,6 +39,7 @@ export interface LevelUpInfo {
   average_hp?: number
   has_asi?: boolean
   has_subclass_choice?: boolean
+  multiclass_options?: MulticlassOption[]
 }
 
 export interface ASIChoice {
@@ -42,6 +56,7 @@ export interface LevelUpChoices {
   subclass_id?: string
   asi_choice?: ASIChoice
   new_skill_proficiencies?: string[]
+  new_class_id?: string
 }
 
 export function useCharacters() {
