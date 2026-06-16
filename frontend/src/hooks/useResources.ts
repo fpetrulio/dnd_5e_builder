@@ -87,3 +87,18 @@ export function useClassFeatures(classId: string | undefined, level: number) {
     staleTime: Infinity,
   })
 }
+
+export interface SubclassApi {
+  id: string
+  name: string
+  description: string
+}
+
+export function useSubclasses(classId: string | undefined) {
+  return useQuery({
+    queryKey: ['resources', 'subclasses', classId],
+    queryFn: () => resourcesApi.subclasses(classId as string) as Promise<SubclassApi[]>,
+    enabled: !!classId,
+    staleTime: Infinity,
+  })
+}

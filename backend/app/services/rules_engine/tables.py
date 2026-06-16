@@ -542,3 +542,78 @@ SUBCLASS_LEVELS: dict[str, int] = {
     "warlock":   1,
     "wizard":    2,
 }
+
+
+# SRD subclasses per class. Each entry: {id, name, description}
+SUBCLASSES: dict[str, list[dict[str, str]]] = {
+    "artificer": [
+        {"id": "alchemist", "name": "Alchemist", "description": "Specialises in creating potions, acids, and elixirs from your alchemist's supplies."},
+        {"id": "armorer", "name": "Armorer", "description": "Channels magical power through specially constructed armor to become a walking tank."},
+        {"id": "artillerist", "name": "Artillerist", "description": "Specialises in ranged combat using magical cannons fuelled by your craft."},
+        {"id": "battle-smith", "name": "Battle Smith", "description": "Combines magical weaponry with a mechanical steel defender companion."},
+    ],
+    "barbarian": [
+        {"id": "berserker", "name": "Path of the Berserker", "description": "Taps into a deeper frenzy, striking with abandon and shrugging off pain beyond mortal endurance."},
+        {"id": "totem-warrior", "name": "Path of the Totem Warrior", "description": "Channels the spirit of an animal totem — bear, eagle, or wolf — granting supernatural gifts."},
+    ],
+    "bard": [
+        {"id": "lore", "name": "College of Lore", "description": "Collects knowledge and wields cutting words to hinder foes. Gains magical secrets from other classes."},
+        {"id": "valor", "name": "College of Valor", "description": "Inspires combat prowess, learns martial weapons and armour, and can cast spells while fighting."},
+    ],
+    "cleric": [
+        {"id": "knowledge", "name": "Knowledge Domain", "description": "Gains proficiency and expertise in Intelligence skills, and can steal knowledge from foes."},
+        {"id": "life", "name": "Life Domain", "description": "Focuses on healing, becoming a powerful healer with bonus healing spells and features."},
+        {"id": "light", "name": "Light Domain", "description": "Commands the power of radiance and fire — blinding foes and banishing darkness."},
+        {"id": "nature", "name": "Nature Domain", "description": "Controls plants and animals, gaining druid cantrips and the ability to charm beasts and plants."},
+        {"id": "tempest", "name": "Tempest Domain", "description": "Wields thunder and lightning, dealing maximum damage with storm spells and pushing foes away."},
+        {"id": "trickery", "name": "Trickery Domain", "description": "Uses deception and illusion, creating duplicates, turning invisible, and granting stealth to allies."},
+        {"id": "war", "name": "War Domain", "description": "Becomes a divine warrior, making extra attacks and gaining bonus to hit as a reaction."},
+    ],
+    "druid": [
+        {"id": "land", "name": "Circle of the Land", "description": "Draws power from the natural world — recovering slots on a short rest and gaining biome-based spells."},
+        {"id": "moon", "name": "Circle of the Moon", "description": "Masters Wild Shape, transforming into powerful beasts and eventually elementals."},
+    ],
+    "fighter": [
+        {"id": "champion", "name": "Champion", "description": "The simplest and most durable archetype — improved critical hits and superior athleticism."},
+        {"id": "battle-master", "name": "Battle Master", "description": "Learns combat manoeuvres fuelled by superiority dice, offering tactical versatility."},
+        {"id": "eldritch-knight", "name": "Eldritch Knight", "description": "Blends martial prowess with abjuration and evocation magic for battlefield control."},
+    ],
+    "monk": [
+        {"id": "open-hand", "name": "Way of the Open Hand", "description": "Masters unarmed combat — pushing, knocking prone, and denying reactions with each flurry."},
+        {"id": "shadow", "name": "Way of Shadow", "description": "Walks between light and darkness, teleporting through shadows and casting shadow spells."},
+        {"id": "four-elements", "name": "Way of the Four Elements", "description": "Channels elemental energy through ki, bending fire, water, air, and earth to your will."},
+    ],
+    "paladin": [
+        {"id": "devotion", "name": "Oath of Devotion", "description": "The archetypal holy knight — sacred weapon, divine health, and aura of devotion against charm."},
+        {"id": "ancients", "name": "Oath of the Ancients", "description": "Protects the light of the world — aura of warding vs spells and resistance to magical damage."},
+        {"id": "vengeance", "name": "Oath of Vengeance", "description": "Relentlessly hunts foes — vow of enmity (advantage), hold person, and misty step in pursuit."},
+    ],
+    "ranger": [
+        {"id": "hunter", "name": "Hunter", "description": "Masters combat against a specific enemy type with colossus slayer, multiattack defence, and more."},
+        {"id": "beast-master", "name": "Beast Master", "description": "Forms a bond with a beast companion that fights alongside you in battle."},
+    ],
+    "rogue": [
+        {"id": "thief", "name": "Thief", "description": "The consummate burglar — fast hands, second-story work, and eventually using magic items freely."},
+        {"id": "assassin", "name": "Assassin", "description": "Strikes before combat begins, dealing massive damage with disguise and poison expertise."},
+        {"id": "arcane-trickster", "name": "Arcane Trickster", "description": "Supplements roguish skill with enchantment and illusion magic, including Mage Hand legerdemain."},
+    ],
+    "sorcerer": [
+        {"id": "draconic-bloodline", "name": "Draconic Bloodline", "description": "Draconic ancestry grants extra HP, armour without wearing any, and powerful draconic wings at level 14."},
+        {"id": "wild-magic", "name": "Wild Magic", "description": "Unpredictable magic surges accompany your spells, sometimes helpful, sometimes chaotic."},
+    ],
+    "warlock": [
+        {"id": "archfey", "name": "The Archfey", "description": "Patron from the Feywild — frightening, charming, and vanishing in a shower of motes."},
+        {"id": "fiend", "name": "The Fiend", "description": "Patron from the Lower Planes — dark one's blessing grants temporary HP for every kill."},
+        {"id": "great-old-one", "name": "The Great Old One", "description": "Patron from beyond — telepathy, awakened mind, and entropic ward for beguiling defence."},
+    ],
+    "wizard": [
+        {"id": "abjuration", "name": "School of Abjuration", "description": "Specialises in protective magic — arcane ward absorbs damage and spell resistance follows."},
+        {"id": "conjuration", "name": "School of Conjuration", "description": "Minor conjuration creates objects; later features let you reshape conjured creatures."},
+        {"id": "divination", "name": "School of Divination", "description": "Portent dice let you swap any d20 roll for a pre-rolled result — powerful foreknowledge."},
+        {"id": "enchantment", "name": "School of Enchantment", "description": "Hypnotic gaze charms one creature for free; later you redirect enchantments to different targets."},
+        {"id": "evocation", "name": "School of Evocation", "description": "Sculpts spells around allies and empowers them — the archetypal blasting school."},
+        {"id": "illusion", "name": "School of Illusion", "description": "Malleable illusions can be changed after casting; later you make them quasi-real."},
+        {"id": "necromancy", "name": "School of Necromancy", "description": "Grim harvest restores HP when you kill with spells; you raise and command undead."},
+        {"id": "transmutation", "name": "School of Transmutation", "description": "Transmuter's stone grants persistent benefits; at high level you can transform creatures."},
+    ],
+}

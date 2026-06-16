@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.importer.open5e import get_backgrounds, get_classes, get_races, get_spells
-from app.services.rules_engine.tables import CLASS_FEATURES, CLASS_SKILL_OPTIONS
+from app.services.rules_engine.tables import CLASS_FEATURES, CLASS_SKILL_OPTIONS, SUBCLASSES
 
 router = APIRouter()
 
@@ -37,6 +37,14 @@ async def list_spells(
     db: AsyncSession = Depends(get_db),
 ) -> list[dict[str, Any]]:
     return await get_spells(db, level=level, class_name=classes, limit=limit, offset=offset)
+
+
+@router.get("/subclasses")
+async def list_subclasses(
+    class_id: str = Query(..., description="Class slug, e.g. 'fighter'"),
+) -> list[dict[str, Any]]:
+    """Return SRD subclasses for a given class."""
+    return SUBCLASSES.get(class_id.lower(), [])
 
 
 @router.get("/class-skills")

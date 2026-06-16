@@ -3,8 +3,8 @@ import { ChevronLeft, ChevronRight, Check, Dice6, Loader2, Sparkles } from 'luci
 import { cn, slugToLabel, formatModifier } from '@/lib/utils'
 import { useLevelUpInfo, useLevelUp } from '@/hooks/useCharacters'
 import type { LevelUpChoices, ASIChoice } from '@/hooks/useCharacters'
-import { useClassFeatures } from '@/hooks/useResources'
-import type { ClassFeatureApi } from '@/hooks/useResources'
+import { useClassFeatures, useSubclasses } from '@/hooks/useResources'
+import type { ClassFeatureApi, SubclassApi } from '@/hooks/useResources'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ export default function LevelUpWizard({
   const [manualHp, setManualHp] = useState<string>('')
 
   // Subclass state
-  const [subclassInput, setSubclassInput] = useState('')
+  const [selectedSubclassId, setSelectedSubclassId] = useState<string | null>(null)
 
   // ASI state
   const [asiMethod, setAsiMethod] = useState<ASIMethod>('single')
@@ -61,6 +61,9 @@ export default function LevelUpWizard({
   const { data: allFeatures = [] } = useClassFeatures(
     info?.class_id,
     info?.new_class_level ?? 0,
+  )
+  const { data: subclassList = [], isLoading: subclassesLoading } = useSubclasses(
+    info?.has_subclass_choice ? info.class_id : undefined,
   )
 
   if (isLoading) {
@@ -138,7 +141,7 @@ export default function LevelUpWizard({
     const choices: LevelUpChoices = {
       hp_method: hpMethod,
       hp_value: hpVal,
-      subclass_id: subclassInput.trim() || undefined,
+      subclass_id: selectedSubclassId ?? undefined,
       asi_choice: asiChoice,
     }
 
@@ -346,17 +349,46 @@ export default function LevelUpWizard({
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Choose Your Archetype</h2>
           <p className="text-sm opacity-60">
-            At level {newClassLevel}, your {slugToLabel(info.class_id ?? '')} chooses a subclass (archetype). Enter the subclass name, or leave blank to decide later.
+            At level {newClassLevel}, your {slugToLabel(info.class_id ?? '')} chooses a subclass. You can skip and decide later.
           </p>
-          <input
-            type="text"
-            value={subclassInput}
-            onChange={(e) => setSubclassInput(e.target.value)}
-            placeholder="e.g. School of Evocation, Berserker, Champion…"
-            className="w-full px-3 py-2 rounded border text-sm"
-            style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}
-          />
-          <p className="text-xs opacity-40">Mechanical effects of subclass features are not yet computed. This is for record-keeping.</p>
+
+          {subclassesLoading ? (
+            <div className="flex items-center gap-2 py-6 opacity-50">
+              <Loader2 size={16} className="animate-spin" /> Loading archetypes…
+            </div>
+          ) : subclassList.length > 0 ? (
+            <div className="space-y-2">
+              {subclassList.map((sc: SubclassApi) => (
+                <button
+                  key={sc.id}
+                  type="button"
+                  onClick={() => setSelectedSubclassId(selectedSubclassId === sc.id ? null : sc.id)}
+                  className="w-full text-left rounded-lg border p-3 transition-all hover:opacity-90"
+                  style={{
+                    borderColor: selectedSubclassId === sc.id ? 'var(--color-primary)' : 'var(--color-border)',
+                    backgroundColor: selectedSubclassId === sc.id
+                      ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)'
+                      : 'var(--color-surface)',
+                  }}
+                >
+                  <div className="font-medium text-sm" style={{ color: selectedSubclassId === sc.id ? 'var(--color-primary)' : 'inherit' }}>
+                    {sc.name}
+                  </div>
+                  <div className="text-xs opacity-60 mt-0.5 leading-relaxed">{sc.description}</div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm opacity-50 italic">No SRD archetypes found for this class.</p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setSelectedSubclassId(null)}
+            className={cn('text-xs underline opacity-50 hover:opacity-80', selectedSubclassId === null ? 'opacity-80' : '')}
+          >
+            {selectedSubclassId === null ? '✓ Skip for now' : 'Skip / decide later'}
+          </button>
         </div>
       )}
 
@@ -516,7 +548,11 @@ export default function LevelUpWizard({
             {info.has_subclass_choice && (
               <SummaryRow
                 label="Subclass"
-                value={subclassInput.trim() || '(not chosen yet)'}
+                value={
+                  selectedSubclassId
+                    ? (subclassList.find((s: SubclassApi) => s.id === selectedSubclassId)?.name ?? selectedSubclassId)
+                    : '(not chosen yet)'
+                }
               />
             )}
 

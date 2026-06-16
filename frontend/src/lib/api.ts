@@ -48,6 +48,8 @@ export const resourcesApi = {
   classSkills: () => api.get('/resources/class-skills').then((r) => r.data),
   classFeatures: (classId: string, level: number) =>
     api.get('/resources/class-features', { params: { class_id: classId, level } }).then((r) => r.data),
+  subclasses: (classId: string) =>
+    api.get('/resources/subclasses', { params: { class_id: classId } }).then((r) => r.data),
 }
 
 // ─── Party ───────────────────────────────────────────────────────────────────
