@@ -1,4 +1,19 @@
-.PHONY: help setup dev build docker-up docker-down docker-build test lint
+.PHONY: help setup dev build docker-up docker-down docker-build docker-logs test lint
+
+# ─── Platform detection ────────────────────────────────────────────────────────
+ifeq ($(OS),Windows_NT)
+    PY      := backend/.venv/Scripts/python
+    PYTEST  := backend/.venv/Scripts/pytest
+    UVICORN := backend/.venv/Scripts/uvicorn
+    RUFF    := backend/.venv/Scripts/ruff
+    CPENV   := if not exist .env copy .env.example .env
+else
+    PY      := backend/.venv/bin/python
+    PYTEST  := backend/.venv/bin/pytest
+    UVICORN := backend/.venv/bin/uvicorn
+    RUFF    := backend/.venv/bin/ruff
+    CPENV   := test -f .env || cp .env.example .env
+endif
 
 # ─── Aiuto ────────────────────────────────────────────────────────────────────
 help:
@@ -19,24 +34,23 @@ setup:
 	@echo ">>> Creazione virtual environment Python..."
 	cd backend && python -m venv .venv
 	@echo ">>> Installazione dipendenze backend..."
-	cd backend && .venv/Scripts/pip install -r requirements.txt 2>/dev/null || \
-	              .venv/bin/pip install -r requirements.txt
+	$(PY) -m pip install -r backend/requirements.txt
 	@echo ">>> Copia .env.example -> .env (se non esiste)..."
-	@test -f .env || cp .env.example .env
+	@$(CPENV)
 	@echo ">>> Setup completato. Configura .env con la tua ANTHROPIC_API_KEY"
 
 # ─── Sviluppo ─────────────────────────────────────────────────────────────────
 dev:
 	@echo ">>> Avvio dev server (backend :8000, frontend :5173)..."
 	npx concurrently --names "BACKEND,FRONTEND" --prefix-colors "blue,green" \
-		"cd backend && .venv/Scripts/uvicorn app.main:app --reload --host 0.0.0.0 2>/dev/null || .venv/bin/uvicorn app.main:app --reload --host 0.0.0.0" \
+		"$(UVICORN) app.main:app --reload --host 0.0.0.0 --app-dir backend" \
 		"cd frontend && npm run dev"
 
 # ─── Build ────────────────────────────────────────────────────────────────────
 build:
 	@echo ">>> Build frontend..."
 	cd frontend && npm run build
-	@echo ">>> Build completata. Avvia con: make docker-up oppure cd backend && uvicorn app.main:app"
+	@echo ">>> Build completata. Avvia con: make docker-up oppure $(UVICORN) app.main:app --app-dir backend"
 
 # ─── Docker ───────────────────────────────────────────────────────────────────
 docker-build:
@@ -45,7 +59,7 @@ docker-build:
 docker-up:
 	docker compose up -d
 	@echo ">>> App disponibile su http://localhost"
-	@echo ">>> API docs su http://localhost:8000/api/docs"
+	@echo ">>> API docs su http://localhost/api/docs"
 
 docker-down:
 	docker compose down
@@ -55,10 +69,10 @@ docker-logs:
 
 # ─── Test ─────────────────────────────────────────────────────────────────────
 test:
-	cd backend && .venv/Scripts/pytest 2>/dev/null || .venv/bin/pytest
-	cd frontend && npm run test 2>/dev/null || echo "Nessun test frontend configurato"
+	$(PYTEST) backend/
+	cd frontend && npm run test 2>NUL || echo "Nessun test frontend configurato"
 
 # ─── Lint ─────────────────────────────────────────────────────────────────────
 lint:
 	cd frontend && npm run lint
-	cd backend && .venv/Scripts/ruff check . 2>/dev/null || .venv/bin/ruff check . 2>/dev/null || echo "ruff non installato"
+	$(RUFF) check backend/
