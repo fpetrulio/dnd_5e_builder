@@ -35,4 +35,11 @@ Documentazione dettagliata: docs/FEATURES.md, docs/ROADMAP.md
 - GitHub CLI (`gh`) installato e autenticato come `fpetrulio`
 
 ## Stack tecnico
-Da definire — progetto in fase iniziale.
+- **Frontend:** React 18 + TypeScript + Vite + TailwindCSS + shadcn/ui + Recharts + Zustand
+- **Backend:** Python 3.12 + FastAPI + SQLAlchemy 2.0 + Alembic + Pydantic
+- **Database:** SQLite (locale), migrabile a PostgreSQL
+- **AI:** Anthropic Claude API (claude-sonnet-4-6)
+- **Desktop (futuro):** Tauri 2
+- **Dati D&D:** Open5e API (primaria) + 5etools JSON (fallback/arricchimento)
+
+Architettura dettagliata: docs/ARCHITECTURE.md
