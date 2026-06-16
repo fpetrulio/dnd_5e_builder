@@ -3,6 +3,7 @@ import { ChevronLeft, ArrowUp, Loader2, AlertCircle } from 'lucide-react'
 import CharacterSheet from '@/features/character/CharacterSheet'
 import ProgressionTimeline from '@/features/character/ProgressionTimeline'
 import ProgressionChart from '@/features/character/ProgressionChart'
+import AIAdvisor from '@/features/character/AIAdvisor'
 import { useCharacter, useLevelUpInfo } from '@/hooks/useCharacters'
 
 const MAX_LEVEL = 20
@@ -69,6 +70,7 @@ export default function CharacterPage() {
             />
             <ProgressionChart characterId={character.id} />
           </div>
+          <AIAdvisor characterId={character.id} />
         </>
       )}
     </div>

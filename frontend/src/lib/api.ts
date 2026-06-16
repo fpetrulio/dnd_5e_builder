@@ -65,5 +65,5 @@ export const aiApi = {
   advise: (characterId: string, goal: string) =>
     api.post('/ai/advise', { character_id: characterId, goal }).then((r) => r.data),
   compare: (characterIds: string[]) =>
-    api.post('/compare', { character_ids: characterIds }).then((r) => r.data),
+    api.post('/ai/compare', { character_ids: characterIds }).then((r) => r.data),
 }
