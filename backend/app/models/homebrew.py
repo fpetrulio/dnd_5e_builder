@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -14,7 +17,7 @@ class HomebrewResource(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     source_label: Mapped[str] = mapped_column(String(100), default="Homebrew")
     data_json: Mapped[str] = mapped_column(Text, nullable=False)
-    validated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    validated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

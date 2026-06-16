@@ -30,6 +30,9 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S", "T20"]
 "app/services/rules_engine/tables.py" = ["E501"]
+# SQLAlchemy Mapped annotations must use Optional[X] on Python <3.10
+# because SQLAlchemy's own eval() doesn't support the X|Y union syntax.
+"app/models/**" = ["UP006", "UP007", "UP035", "UP037"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]

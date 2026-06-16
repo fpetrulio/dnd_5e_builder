@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import json
 from datetime import datetime
-from typing import Any
+from typing import Any, List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -13,16 +15,15 @@ class Character(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    campaign_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    campaign_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    # Full character state as JSON (denormalized for simplicity at this stage)
     state_json: Mapped[str] = mapped_column(Text, default="{}")
 
-    snapshots: Mapped[list["CharacterSnapshot"]] = relationship(
+    snapshots: Mapped[List["CharacterSnapshot"]] = relationship(
         back_populates="character", cascade="all, delete-orphan"
     )
 

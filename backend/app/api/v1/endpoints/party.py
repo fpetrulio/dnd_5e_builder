@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -98,10 +98,11 @@ async def get_party(party_id: str, db: AsyncSession = Depends(get_db)) -> dict[s
 
 
 @router.delete("/{party_id}", status_code=204)
-async def delete_party(party_id: str, db: AsyncSession = Depends(get_db)) -> None:
+async def delete_party(party_id: str, db: AsyncSession = Depends(get_db)) -> Response:
     party = await _get_party_or_404(party_id, db)
     await db.delete(party)
     await db.commit()
+    return Response(status_code=204)
 
 
 @router.post("/{party_id}/members", status_code=201)
@@ -134,7 +135,7 @@ async def add_member(
 @router.delete("/{party_id}/members/{character_id}", status_code=204)
 async def remove_member(
     party_id: str, character_id: str, db: AsyncSession = Depends(get_db)
-) -> None:
+) -> Response:
     result = await db.execute(
         select(PartyMember).where(
             PartyMember.party_id == party_id,
@@ -146,3 +147,4 @@ async def remove_member(
         raise HTTPException(404, "Member not found in party")
     await db.delete(member)
     await db.commit()
+    return Response(status_code=204)

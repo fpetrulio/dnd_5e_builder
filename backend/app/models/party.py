@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -11,10 +14,10 @@ class Party(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    campaign_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    campaign_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    members: Mapped[list["PartyMember"]] = relationship(
+    members: Mapped[List["PartyMember"]] = relationship(
         back_populates="party", cascade="all, delete-orphan"
     )
 

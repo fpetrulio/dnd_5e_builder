@@ -55,7 +55,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             return response
         except Exception as exc:
             self._log.error(
-                "%s %s → ERROR: %s",
+                "%s %s -> ERROR: %s",
                 request.method,
                 request.url.path,
                 exc,
@@ -68,7 +68,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             level = logging.WARNING if status >= 400 else logging.INFO
             self._log.log(
                 level,
-                "%s %s → %d  (%.1f ms)",
+                "%s %s -> %d  (%.1f ms)",
                 request.method,
                 request.url.path,
                 status,

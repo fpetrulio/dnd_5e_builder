@@ -5,7 +5,7 @@ import logging
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -62,10 +62,11 @@ async def create_homebrew(
 
 
 @router.delete("/{resource_id}", status_code=204)
-async def delete_homebrew(resource_id: str, db: AsyncSession = Depends(get_db)) -> None:
+async def delete_homebrew(resource_id: str, db: AsyncSession = Depends(get_db)) -> Response:
     resource = await db.get(HomebrewResource, resource_id)
     if not resource:
         raise HTTPException(404, "Resource not found")
     _log.info("Deleted homebrew resource '%s' (id=%s)", resource.name, resource_id)
     await db.delete(resource)
     await db.commit()
+    return Response(status_code=204)

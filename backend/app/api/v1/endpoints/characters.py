@@ -5,7 +5,7 @@ import math
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -129,10 +129,11 @@ async def update_character(
 
 
 @router.delete("/{character_id}", status_code=204)
-async def delete_character(character_id: str, db: AsyncSession = Depends(get_db)) -> None:
+async def delete_character(character_id: str, db: AsyncSession = Depends(get_db)) -> Response:
     char = await _get_or_404(character_id, db)
     await db.delete(char)
     await db.commit()
+    return Response(status_code=204)
 
 
 @router.get("/{character_id}/stats")
