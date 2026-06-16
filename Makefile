@@ -15,7 +15,7 @@ help:
 # ─── Setup ────────────────────────────────────────────────────────────────────
 setup:
 	@echo ">>> Installazione dipendenze frontend..."
-	cd frontend && npm install
+	cd frontend && npm install --legacy-peer-deps
 	@echo ">>> Creazione virtual environment Python..."
 	cd backend && python -m venv .venv
 	@echo ">>> Installazione dipendenze backend..."
