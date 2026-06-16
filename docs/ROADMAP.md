@@ -41,11 +41,12 @@
 - [ ] Confronto build differenziale visuale
 
 ## Fase 4 — Confronto e AI
-- [x] Endpoint AI advisor (advise + compare) — solo backend
-- [ ] UI comparatore build (pagina /compare esiste ma è vuota)
-- [ ] Diff visuale tra livelli
-- [ ] UI AI Advisor integrata nella scheda personaggio
-- [ ] Ottimizzatore con obiettivo (DPS / survivability / utility)
+- [x] Endpoint AI advisor (advise + compare)
+- [x] UI AI Advisor nella pagina personaggio (pannello collassabile con goal presets)
+- [x] UI comparatore build completa (selettori, tabella diff colorata, skill proficiency)
+- [x] AI Compare nella pagina /compare (analisi Claude per categoria)
+- [ ] Diff visuale tra livelli (confronto snapshot a snapshot)
+- [ ] Ottimizzatore con obiettivo guidato (wizard DPS / survivability / utility)
 
 ## Fase 5 — Homebrew e Risorse Custom
 - [ ] Editor risorse homebrew (pagina /homebrew esiste ma è vuota)
